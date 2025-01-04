@@ -1,4 +1,12 @@
 <?php
+session_start();
+
+// Memeriksa apakah admin sudah login
+if (!isset($_SESSION['username'])) {
+    header("Location: ./login.php");
+    exit();
+}
+
 // Menyertakan file config_query.php
 include 'app/config_query.php';
 
@@ -111,11 +119,21 @@ $conn->close();
                     <span class="text-s">Ulasan</span></a>
             </li>
 
+            <!-- Tampilkan Manajemen Admin hanya jika role adalah Superadmin -->
+            <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 'Superadmin'): ?>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= $base_url ?>/admin-management">
+                        <i class="fas fa-comments"></i>
+                        <span class="text-s">Manajemen Admin</span></a>
+                </li>
+            <?php endif; ?>
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block" />
 
-            <button class="btn btn-danger mx-3 mb-4">Logout</button>
+            <a href="<?= $base_url ?>/logout" class="btn btn-danger mx-3 mb-4">
+                Logout
+            </a>
 
             <!-- Sidebar Toggler (Sidebar) -->
             <div class="text-center d-none d-md-inline">
@@ -134,15 +152,14 @@ $conn->close();
                     <!-- Sidebar Toggle (Topbar) -->
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
-                </button>
+                    </button>
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
                             <div class="nav-link dropdown-toggle">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
-                                <img class="img-profile rounded-circle" src="<?= $base_url ?>/img/undraw_profile.svg" />
+                                <span class="mr-2 d-none d-lg-inline text-dark">Hallo, <strong><?= $_SESSION['nama']; ?></strong></span>
                             </div>
                         </li>
                     </ul>

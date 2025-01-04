@@ -1,9 +1,18 @@
 <?php
+session_start();
+
+// Memeriksa apakah admin sudah login
+if (!isset($_SESSION['username'])) {
+    header("Location: ./login.php");
+    exit();
+}
+
 // Menyertakan file konfigurasi database
 include '../app/config_query.php';
 
 // Fungsi untuk mendapatkan daftar kategori
-function getCategoryList($conn){
+function getCategoryList($conn)
+{
     $query = "SELECT * FROM kategori_produk ORDER BY id_kategori ASC";
     $result = $conn->query($query);
 
@@ -102,12 +111,22 @@ $jumlah_produk_per_kategori = getJumlahProdukPerKategori($conn);
                     <i class="fas fa-comments"></i>
                     <span class="text-s">Ulasan</span></a>
             </li>
+            <!-- Tampilkan Manajemen Admin hanya jika role adalah Superadmin -->
+            <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 'Superadmin'): ?>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= $base_url ?>/admin-management">
+                        <i class="fas fa-comments"></i>
+                        <span class="text-s">Manajemen Admin</span></a>
+                </li>
+            <?php endif; ?>
 
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block" />
 
-            <button class="btn btn-danger mx-3 mb-4">Logout</button>
+            <a href="<?= $base_url ?>/logout" class="btn btn-danger mx-3 mb-4">
+                Logout
+            </a>
 
             <!-- Sidebar Toggler (Sidebar) -->
             <div class="text-center d-none d-md-inline">
@@ -132,11 +151,9 @@ $jumlah_produk_per_kategori = getJumlahProdukPerKategori($conn);
                     <ul class="navbar-nav ml-auto">
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
-                                <img class="img-profile rounded-circle" src="../img/undraw_profile.svg" />
-                            </a>
+                            <div class="nav-link dropdown-toggle">
+                                <span class="mr-2 d-none d-lg-inline text-dark">Hallo, <strong><?= $_SESSION['nama']; ?></strong></span>
+                            </div>
                         </li>
                     </ul>
                 </nav>
@@ -181,7 +198,7 @@ $jumlah_produk_per_kategori = getJumlahProdukPerKategori($conn);
                                                             <button type="button" class="btn btn-warning w-100 py-2" style="font-size: 1rem;">
                                                                 View
                                                             </button>
-                                                        </a>    
+                                                        </a>
                                                     </div>
                                                     <div class="col-12 mb-3">
                                                         <button type="button" class="btn btn-primary w-100 py-2" style="font-size: 1rem;">
@@ -200,7 +217,7 @@ $jumlah_produk_per_kategori = getJumlahProdukPerKategori($conn);
                                 </div>
                             <?php endforeach; ?>
                         <?php else : ?>
-                                <span colspan="8" class="text-center">Tidak ada data Kategori.</span>
+                            <span colspan="8" class="text-center">Tidak ada data Kategori.</span>
                         <?php endif; ?>
                     </div>
                 </div>

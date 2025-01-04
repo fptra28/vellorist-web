@@ -1,4 +1,12 @@
 <?php
+session_start();
+
+// Memeriksa apakah admin sudah login
+if (!isset($_SESSION['username'])) {
+    header("Location: ./login.php");
+    exit();
+}
+
 // Menyertakan file konfigurasi database
 include '../app/config_query.php';
 
@@ -96,12 +104,22 @@ $ulasanList = getUlasan($conn);
                     <i class="fas fa-comments"></i>
                     <span class="text-s">Ulasan</span></a>
             </li>
+            <!-- Tampilkan Manajemen Admin hanya jika role adalah Superadmin -->
+            <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 'Superadmin'): ?>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= $base_url ?>/admin-management">
+                        <i class="fas fa-comments"></i>
+                        <span class="text-s">Manajemen Admin</span></a>
+                </li>
+            <?php endif; ?>
 
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block" />
 
-            <button class="btn btn-danger mx-3 mb-4">Logout</button>
+            <a href="<?= $base_url ?>/logout" class="btn btn-danger mx-3 mb-4">
+                Logout
+            </a>
 
             <!-- Sidebar Toggler (Sidebar) -->
             <div class="text-center d-none d-md-inline">
@@ -126,11 +144,9 @@ $ulasanList = getUlasan($conn);
                     <ul class="navbar-nav ml-auto">
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
-                                <img class="img-profile rounded-circle" src="../img/undraw_profile.svg" />
-                            </a>
+                            <div class="nav-link dropdown-toggle">
+                                <span class="mr-2 d-none d-lg-inline text-dark">Hallo, <strong><?= $_SESSION['nama']; ?></strong></span>
+                            </div>
                         </li>
                     </ul>
                 </nav>
@@ -154,7 +170,7 @@ $ulasanList = getUlasan($conn);
                                             <!-- Menyusun nama pelanggan dan rating berseberangan -->
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <h5 class="card-title font-weight-bold"><?= htmlspecialchars($ulasan['nama_pelanggan']) ?></h5>
-                                                <span class="badge badge-warning">Rating: <?= htmlspecialchars($ulasan['rating'])?></span>
+                                                <span class="badge badge-warning">Rating: <?= htmlspecialchars($ulasan['rating']) ?></span>
                                             </div>
 
                                             <!-- Tanggal di bawah nama pelanggan dengan teks kecil -->

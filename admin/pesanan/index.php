@@ -1,4 +1,12 @@
 <?php
+session_start();
+
+// Memeriksa apakah admin sudah login
+if (!isset($_SESSION['username'])) {
+    header("Location: ./login.php");
+    exit();
+}
+
 // Menyertakan file konfigurasi database
 include '../app/config_query.php';
 
@@ -100,12 +108,22 @@ $pesananList = getPesananList($conn);
                     <i class="fas fa-comments"></i>
                     <span class="text-s">Ulasan</span></a>
             </li>
+            <!-- Tampilkan Manajemen Admin hanya jika role adalah Superadmin -->
+            <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 'Superadmin'): ?>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= $base_url ?>/admin-management">
+                        <i class="fas fa-comments"></i>
+                        <span class="text-s">Manajemen Admin</span></a>
+                </li>
+            <?php endif; ?>
 
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block" />
 
-            <button class="btn btn-danger mx-3 mb-4">Logout</button>
+            <a href="<?= $base_url ?>/logout" class="btn btn-danger mx-3 mb-4">
+                Logout
+            </a>
 
             <!-- Sidebar Toggler (Sidebar) -->
             <div class="text-center d-none d-md-inline">
@@ -130,11 +148,9 @@ $pesananList = getPesananList($conn);
                     <ul class="navbar-nav ml-auto">
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
-                                <img class="img-profile rounded-circle" src="../img/undraw_profile.svg" />
-                            </a>
+                            <div class="nav-link dropdown-toggle">
+                                <span class="mr-2 d-none d-lg-inline text-dark">Hallo, <strong><?= $_SESSION['nama']; ?></strong></span>
+                            </div>
                         </li>
                     </ul>
                 </nav>
@@ -173,7 +189,7 @@ $pesananList = getPesananList($conn);
                                             <td><?= htmlspecialchars($pesanan['nama_pelanggan']) ?></td>
                                             <td><?= htmlspecialchars($pesanan['tanggal_pemesanan']) ?></td>
                                             <td><?= htmlspecialchars($pesanan['nama_produk']) ?></td>
-                                            <td><?= number_format($pesanan['total_harga'], 2) ?></td>
+                                            <td>IDR <?= number_format($pesanan['total_harga'], 2) ?></td>
                                             <td><?= htmlspecialchars($pesanan['status_pemesanan']) ?></td>
                                             <td><?= htmlspecialchars($pesanan['metode_pembayaran']) ?></td>
                                             <td><?= htmlspecialchars($pesanan['keterangan']) ?></td>
