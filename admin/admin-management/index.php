@@ -10,20 +10,17 @@ if (!isset($_SESSION['username'])) {
 // Menyertakan file konfigurasi database
 include '../app/config_query.php';
 
-// Fungsi untuk mendapatkan daftar promo
-function getUlasan($conn)
+// Memeriksa apakah admin adalah Superadmin
+if ($_SESSION['role'] !== 'Superadmin') {
+    header("Location: $base_url"); // Arahkan ke halaman lain jika bukan Superadmin
+    exit();
+}
+
+// Fungsi untuk mendapatkan daftar admin dengan pencarian
+function getAdmin($conn, $search = '')
 {
-    $query = "
-    SELECT 
-        ulasan.id_ulasan, 
-        produk.nama_produk, 
-        pelanggan.nama_pelanggan, 
-        ulasan.rating, 
-        ulasan.komentar, 
-        ulasan.created_at 
-    FROM ulasan_produk ulasan
-    JOIN produk ON ulasan.id_produk = produk.id_produk
-    JOIN pelanggan ON ulasan.id_pelanggan = pelanggan.id_pelanggan";
+    $search = $conn->real_escape_string($search); // Menghindari SQL injection
+    $query = "SELECT * FROM tbl_admin WHERE nama_admin LIKE '%$search%' OR username_admin LIKE '%$search%' OR role LIKE '%$search%'";
     $result = $conn->query($query);
 
     if ($result && $result->num_rows > 0) {
@@ -33,8 +30,13 @@ function getUlasan($conn)
     return []; // Kembalikan array kosong jika tidak ada data
 }
 
-$ulasanList = getUlasan($conn);
+// Mendapatkan nilai pencarian dari query string, jika ada
+$search = isset($_GET['search']) ? $_GET['search'] : '';
+
+// Mendapatkan daftar admin berdasarkan pencarian
+$adminList = getAdmin($conn, $search);
 ?>
+
 
 
 
@@ -48,7 +50,7 @@ $ulasanList = getUlasan($conn);
     <meta name="description" content="" />
     <meta name="author" content="" />
 
-    <title>Vellorist - Admin Management</title>
+    <title>Vellorist - Manajemen Admin</title>
 
     <!-- Custom fonts for this template-->
     <link href="<?= $base_url ?>/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css" />
@@ -90,7 +92,7 @@ $ulasanList = getUlasan($conn);
                     <span class="text-s">Pesanan</span></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="<?= $base_url ?>/produk">
+                <a class="nav-link" href="<?= $base_url ?>/kategori">
                     <i class="fa-solid fa-store"></i>
                     <span class="text-s">Produk</span></a>
             </li>
@@ -108,7 +110,7 @@ $ulasanList = getUlasan($conn);
             <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 'Superadmin'): ?>
                 <li class="nav-item active">
                     <a class="nav-link" href="<?= $base_url ?>/admin-management">
-                        <i class="fas fa-comments"></i>
+                        <i class="fa-solid fa-user-tie"></i>
                         <span class="text-s">Manajemen Admin</span></a>
                 </li>
             <?php endif; ?>
@@ -156,46 +158,69 @@ $ulasanList = getUlasan($conn);
                 <div class="container-fluid">
                     <!-- Page Heading -->
                     <div class="d-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Ulasan</h1>
+                        <h1 class="h3 mb-0 text-gray-800">Manajemen Admin</h1>
+                        <div class="d-flex">
+                            <!-- Search Bar -->
+                            <form method="get" action="index.php" class="d-flex">
+                                <input type="text" name="search" class="form-control w-50 mr-3" placeholder="Search Admin" value="<?= htmlspecialchars($search) ?>" aria-label="Search Admin">
+                                <button type="submit" class="btn btn-primary">Search</button>
+                            </form>
+
+                            <!-- Tambahkan Admin Button -->
+                            <a href="<?= $base_url ?>/admin-management/add-admin.php">
+                                <button type="button" class="btn btn-primary">Tambahkan Admin</button>
+                            </a>
+                        </div>
                     </div>
 
                     <!-- Content Row -->
-                    <div class="row">
-                        <!-- Card Example -->
-                        <?php if (!empty($ulasanList)) : ?>
-                            <?php foreach ($ulasanList as $ulasan) : ?>
-                                <div class="col-xl-4 col-md-6 mb-4">
-                                    <div class="card shadow h-100">
-                                        <div class="card-body">
-                                            <!-- Menyusun nama pelanggan dan rating berseberangan -->
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <h5 class="card-title font-weight-bold"><?= htmlspecialchars($ulasan['nama_pelanggan']) ?></h5>
-                                                <span class="badge badge-warning">Rating: <?= htmlspecialchars($ulasan['rating']) ?></span>
-                                            </div>
-
-                                            <!-- Tanggal di bawah nama pelanggan dengan teks kecil -->
-                                            <h6 class="text-muted">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered">
+                            <thead class="table-dark">
+                                <tr class="text-center">
+                                    <th>ID Admin</th>
+                                    <th>Nama Admin</th>
+                                    <th>Username</th>
+                                    <th>Role Admin</th>
+                                    <th>More</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (!empty($adminList)) : ?>
+                                    <?php foreach ($adminList as $admin) : ?>
+                                        <tr class="text-center">
+                                            <td class="align-middle"><?= htmlspecialchars($admin['id_admin']) ?></td>
+                                            <td class="align-middle"><?= htmlspecialchars($admin['nama_admin']) ?></td>
+                                            <td class="align-middle"><?= htmlspecialchars($admin['username_admin']) ?></td>
+                                            <td class="align-middle">
                                                 <?php
-                                                setlocale(LC_TIME, 'id_ID.UTF-8'); // Mengatur locale menjadi Indonesia
-                                                echo strftime('%e %B %Y', strtotime($ulasan['created_at']));
+                                                // Memeriksa role admin dan menampilkan badge yang sesuai
+                                                if ($admin['role'] === 'Superadmin') {
+                                                    echo '<span class="badge bg-danger">' . htmlspecialchars($admin['role']) . '</span>';
+                                                } elseif ($admin['role'] === 'Admin') {
+                                                    echo '<span class="badge bg-primary">' . htmlspecialchars($admin['role']) . '</span>';
+                                                } else {
+                                                    echo '<span class="badge bg-secondary">' . htmlspecialchars($admin['role']) . '</span>';
+                                                }
                                                 ?>
-                                            </h6>
-
-                                            <!-- Nama produk di bawah tanggal dengan heading -->
-                                            <p class="font-weight-bold mb-3"><?= htmlspecialchars($ulasan['nama_produk']) ?></p>
-
-                                            <!-- Isi komentar di bawah dengan tanda kutip dan huruf cetak miring -->
-                                            <p class="card-text text-gray-800 text-center">
-                                                <em>"<?= htmlspecialchars($ulasan['komentar']) ?>"</em>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            <?php endforeach; ?>
-                        <?php else : ?>
-                            <span colspan="8" class="text-center">Tidak ada data Ulasan.</span>
-                        <?php endif; ?>
+                                            </td>
+                                            <td class="d-flex justify-content-between align-items-center">
+                                                <a href="./edit-admin.php?id=<?= $admin['id_admin'] ?>" class="w-50 mr-1">
+                                                    <button type="button" class="btn btn-primary w-100">Edit</button>
+                                                </a>
+                                                <a href="./delete-admin.php?id=<?= $admin['id_admin'] ?>" class="w-50">
+                                                    <button type="button" class="btn btn-danger w-100">Delete</button>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else : ?>
+                                    <tr>
+                                        <td colspan="6" class="text-center">Tidak ada admin ditemukan.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
                 <!-- /.container-fluid -->

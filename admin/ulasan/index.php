@@ -90,7 +90,7 @@ $ulasanList = getUlasan($conn);
                     <span class="text-s">Pesanan</span></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="<?= $base_url ?>/produk">
+                <a class="nav-link" href="<?= $base_url ?>/kategori">
                     <i class="fa-solid fa-store"></i>
                     <span class="text-s">Produk</span></a>
             </li>
@@ -108,7 +108,7 @@ $ulasanList = getUlasan($conn);
             <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 'Superadmin'): ?>
                 <li class="nav-item">
                     <a class="nav-link" href="<?= $base_url ?>/admin-management">
-                        <i class="fas fa-comments"></i>
+                        <i class="fa-solid fa-user-tie"></i>
                         <span class="text-s">Manajemen Admin</span></a>
                 </li>
             <?php endif; ?>
@@ -164,34 +164,31 @@ $ulasanList = getUlasan($conn);
                         <!-- Card Example -->
                         <?php if (!empty($ulasanList)) : ?>
                             <?php foreach ($ulasanList as $ulasan) : ?>
-                                <div class="col-xl-4 col-md-6 mb-4">
-                                    <div class="card shadow h-100">
+                                <div class="col-sm-6 col-md-4 col-lg-3">
+                                    <div class="card mb-4">
                                         <div class="card-body">
-                                            <!-- Menyusun nama pelanggan dan rating berseberangan -->
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <h5 class="card-title font-weight-bold"><?= htmlspecialchars($ulasan['nama_pelanggan']) ?></h5>
-                                                <span class="badge badge-warning">Rating: <?= htmlspecialchars($ulasan['rating']) ?></span>
+                                            <div class="d-flex justify-content-between">
+                                                <!-- Nama Pelanggan dan Rating -->
+                                                <h5 class="card-title"><?= htmlspecialchars($ulasan['nama_pelanggan']) ?></h5>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="ml-2 text-muted">2025-01-04</span>
+                                                </div>
                                             </div>
 
-                                            <!-- Tanggal di bawah nama pelanggan dengan teks kecil -->
-                                            <h6 class="text-muted">
-                                                <?php
-                                                setlocale(LC_TIME, 'id_ID.UTF-8'); // Mengatur locale menjadi Indonesia
-                                                echo strftime('%e %B %Y', strtotime($ulasan['created_at']));
-                                                ?>
-                                            </h6>
+                                            <span class="text-warning">
+                                                <?php for ($i = 0; $i < $ulasan['rating']; $i++) : ?>
+                                                    <i class="fas fa-star"></i>
+                                                <?php endfor; ?>
+                                            </span>
 
-                                            <!-- Nama produk di bawah tanggal dengan heading -->
-                                            <p class="font-weight-bold mb-3"><?= htmlspecialchars($ulasan['nama_produk']) ?></p>
+                                            <!-- Nama Produk -->
+                                            <p><strong><?= htmlspecialchars($ulasan['nama_produk']) ?></strong></p>
 
-                                            <!-- Isi komentar di bawah dengan tanda kutip dan huruf cetak miring -->
-                                            <p class="card-text text-gray-800 text-center">
-                                                <em>"<?= htmlspecialchars($ulasan['komentar']) ?>"</em>
-                                            </p>
+                                            <!-- Komentar -->
+                                            <p class="card-text text-center"><em>"<?= htmlspecialchars($ulasan['komentar']) ?>"</em></p>
                                         </div>
                                     </div>
                                 </div>
-
                             <?php endforeach; ?>
                         <?php else : ?>
                             <span colspan="8" class="text-center">Tidak ada data Ulasan.</span>

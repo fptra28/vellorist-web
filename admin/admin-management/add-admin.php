@@ -10,39 +10,66 @@ if (!isset($_SESSION['username'])) {
 // Menyertakan file konfigurasi database
 include '../app/config_query.php';
 
-// Fungsi untuk mendapatkan daftar kategori
-function getCategoryList($conn)
-{
-    $query = "SELECT * FROM kategori_produk ORDER BY id_kategori ASC";
-    $result = $conn->query($query);
-
-    if ($result && $result->num_rows > 0) {
-        return $result->fetch_all(MYSQLI_ASSOC);
-    }
-
-    return []; // Kembalikan array kosong jika tidak ada data
+// Memeriksa apakah admin adalah Superadmin
+if ($_SESSION['role'] !== 'Superadmin') {
+    header("Location: $base_url"); // Arahkan ke halaman lain jika bukan Superadmin
+    exit();
 }
 
-// Fungsi untuk mendapatkan jumlah produk per kategori
-function getJumlahProdukPerKategori($conn)
-{
-    $query = "SELECT id_kategori, COUNT(*) as jumlah_produk FROM produk GROUP BY id_kategori";
-    $result = $conn->query($query);
+// Inisialisasi variabel untuk error dan sukses
+$error = '';
+$success = '';
 
-    $jumlahProdukPerKategori = [];
-    if ($result && $result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            $jumlahProdukPerKategori[$row['id_kategori']] = $row['jumlah_produk'];
+// Memproses form saat tombol submit ditekan
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Mendapatkan data dari form
+    $nama = trim($_POST['nama']);
+    $username = trim($_POST['username']);
+    $password = trim($_POST['password']);
+    $role = trim($_POST['role']);
+
+    // Validasi sederhana
+    if (empty($nama) || empty($username) || empty($password) || empty($role)) {
+        $error = "Semua field wajib diisi.";
+    } elseif (strlen($username) < 5) {
+        $error = "Username harus memiliki minimal 5 karakter.";
+    } elseif (strlen($password) < 6) {
+        $error = "Password harus memiliki minimal 6 karakter.";
+    } else {
+        // Hash password sebelum menyimpan ke database
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+        // Menyimpan data ke dalam database
+        $query = "INSERT INTO tbl_admin (nama_admin, username_admin, password, role) VALUES (?, ?, ?, ?)";
+        $stmt = $conn->prepare($query);
+
+        if ($stmt) {
+            $stmt->bind_param("ssss", $nama, $username, $hashedPassword, $role);
+
+            if ($stmt->execute()) {
+                // Berhasil menyimpan
+                $success = "Admin berhasil ditambahkan.";
+                header("Location: $base_url/admin-management");
+                exit();
+            } else {
+                // Menangani error jika username sudah ada
+                if ($conn->errno === 1062) { // Error code untuk duplikat
+                    $error = "Username sudah digunakan. Gunakan username lain.";
+                } else {
+                    $error = "Terjadi kesalahan saat menyimpan data: " . $conn->error;
+                }
+            }
+
+            $stmt->close();
+        } else {
+            $error = "Gagal menyiapkan query: " . $conn->error;
         }
     }
-    return $jumlahProdukPerKategori;
 }
 
-// Mendapatkan daftar kategori dan jumlah produk per kategori
-$categoryList = getCategoryList($conn);
-$jumlah_produk_per_kategori = getJumlahProdukPerKategori($conn);
+// Menutup koneksi database
+$conn->close();
 ?>
-
 
 
 <!DOCTYPE html>
@@ -55,7 +82,7 @@ $jumlah_produk_per_kategori = getJumlahProdukPerKategori($conn);
     <meta name="description" content="" />
     <meta name="author" content="" />
 
-    <title>Vellorist - Dashboard</title>
+    <title>Vellorist - Add Admin</title>
 
     <!-- Custom fonts for this template-->
     <link href="<?= $base_url ?>/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css" />
@@ -96,7 +123,7 @@ $jumlah_produk_per_kategori = getJumlahProdukPerKategori($conn);
                     <i class="fas fa-bag-shopping"></i>
                     <span class="text-s">Pesanan</span></a>
             </li>
-            <li class="nav-item active">
+            <li class="nav-item">
                 <a class="nav-link" href="<?= $base_url ?>/produk">
                     <i class="fa-solid fa-store"></i>
                     <span class="text-s">Produk</span></a>
@@ -113,7 +140,7 @@ $jumlah_produk_per_kategori = getJumlahProdukPerKategori($conn);
             </li>
             <!-- Tampilkan Manajemen Admin hanya jika role adalah Superadmin -->
             <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 'Superadmin'): ?>
-                <li class="nav-item">
+                <li class="nav-item active">
                     <a class="nav-link" href="<?= $base_url ?>/admin-management">
                         <i class="fas fa-comments"></i>
                         <span class="text-s">Manajemen Admin</span></a>
@@ -163,62 +190,38 @@ $jumlah_produk_per_kategori = getJumlahProdukPerKategori($conn);
                 <div class="container-fluid">
                     <!-- Page Heading -->
                     <div class="d-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Kategori Produk</h1>
-                        <button type="button" class="btn btn-primary" data-toggle="modal"
-                            data-target="#addProductModal">
-                            Tambah Kategori
-                        </button>
+                        <h1 class="h3 mb-0 text-gray-800">Tambah Admin</h1>
                     </div>
 
                     <!-- Content Row -->
-                    <div class="row">
-                        <!-- Card Example -->
-                        <?php if (!empty($categoryList)) : ?>
-                            <?php foreach ($categoryList as $category) : ?>
-                                <div class="col-xl-3 col-md-6 mb-4">
-                                    <div class="card border-left-primary shadow h-100 py-3 ps-2">
-                                        <div class="card-body">
-                                            <div class="row no-gutters align-items-center">
-                                                <div class="col mr-2">
-                                                    <div class="font-weight-bold text-primary text-uppercase mb-2" style="font-size: 1.2rem;">
-                                                        <?= htmlspecialchars($category['nama_kategori']) ?>
-                                                    </div>
-                                                    <div class="text-sm text-gray-800">
-                                                        <!-- Menampilkan Jumlah Produk -->
-                                                        Jumlah Produk: <strong>
-                                                            <?= isset($jumlah_produk_per_kategori[$category['id_kategori']])
-                                                                ? $jumlah_produk_per_kategori[$category['id_kategori']]
-                                                                : 0 ?> Produk
-                                                        </strong>
-                                                    </div>
-                                                </div>
-                                                <div class="col">
-                                                    <div class="col-12 mb-3">
-                                                        <a href="<?= $base_url ?>/produk/list">
-                                                            <button type="button" class="btn btn-warning w-100 py-2" style="font-size: 1rem;">
-                                                                View
-                                                            </button>
-                                                        </a>
-                                                    </div>
-                                                    <div class="col-12 mb-3">
-                                                        <button type="button" class="btn btn-primary w-100 py-2" style="font-size: 1rem;">
-                                                            Edit
-                                                        </button>
-                                                    </div>
-                                                    <div class="col-12">
-                                                        <button type="button" class="btn btn-danger w-100 py-2" style="font-size: 1rem;">
-                                                            Hapus
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                    <div class="container">
+                        <form action="" method="post">
+                            <div class="form-group">
+                                <label for="nama">Nama<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="nama" name="nama" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="username">Username<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password<span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="level">Role<span class="text-danger">*</span></label>
+                                <select class="form-control" id="role" name="role" required>
+                                    <option value="Superadmin">Superadmin</option>
+                                    <option value="Admin">Admin</option>
+                                </select>
+                            </div>
+                            <div>
+                                <div class="text-danger">
+                                    <?php if (isset($error)) echo $error; ?>
                                 </div>
-                            <?php endforeach; ?>
-                        <?php else : ?>
-                            <span colspan="8" class="text-center">Tidak ada data Kategori.</span>
-                        <?php endif; ?>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 mt-5">SUBMIT</button>
+                        </form>
                     </div>
                 </div>
                 <!-- /.container-fluid -->

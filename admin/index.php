@@ -45,6 +45,7 @@ $jumlahKategori = getCount($conn, 'kategori_produk');
 $jumlahPesanan = getCount($conn, 'pesanan');
 $jumlahUlasan = getCount($conn, 'ulasan_produk');
 $jumlahPromo = getCount($conn, 'voucher');
+$jumlahAdmin = getCount($conn, 'tbl_admin');
 
 // Menutup koneksi database
 $conn->close();
@@ -104,7 +105,7 @@ $conn->close();
                     <span class="text-s">Pesanan</span></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="<?= $base_url ?>/produk">
+                <a class="nav-link" href="<?= $base_url ?>/kategori">
                     <i class="fa-solid fa-store"></i>
                     <span class="text-s">Produk</span></a>
             </li>
@@ -123,7 +124,7 @@ $conn->close();
             <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 'Superadmin'): ?>
                 <li class="nav-item">
                     <a class="nav-link" href="<?= $base_url ?>/admin-management">
-                        <i class="fas fa-comments"></i>
+                        <i class="fa-solid fa-user-tie"></i>
                         <span class="text-s">Manajemen Admin</span></a>
                 </li>
             <?php endif; ?>
@@ -213,11 +214,11 @@ $conn->close();
 
                         <!-- Earnings (Monthly) Card Example -->
                         <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-primary shadow h-100 py-2">
+                            <div class="card border-left-info shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center px-3">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
                                                 Kategori</div>
                                             <div class="h5 mb-0 font-weight-bold text-gray-800"><?= $jumlahKategori ?></div>
                                         </div>
@@ -248,11 +249,11 @@ $conn->close();
                         </div>
 
                         <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-info shadow h-100 py-2">
+                            <div class="card border-left-secondary shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center px-3">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-gray-500 text-uppercase mb-1">
+                                            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
                                                 Ulasan</div>
                                             <div class="h5 mb-0 font-weight-bold text-gray-800"><?= $jumlahUlasan ?></div>
                                         </div>
@@ -280,6 +281,25 @@ $conn->close();
                                 </div>
                             </div>
                         </div>
+
+                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 'Superadmin'): ?>
+                            <div class="col-xl-3 col-md-6 mb-4">
+                                <div class="card border-left-dark shadow h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center px-3">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-black text-uppercase mb-1">
+                                                    Admin</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800"><?= $jumlahAdmin ?></div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fa-solid fa-user-tie fa-2x text-gray-300"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <!-- /.container-fluid -->

@@ -17,30 +17,41 @@ if (isset($_POST['submit'])) {
     }
 
     // Menyiapkan query untuk memeriksa data pengguna dari tbl_admin
-    $sql = "SELECT * FROM tbl_admin WHERE username_admin = '$username' AND password = '$password'";
-    $result = $conn->query($sql);
+    $sql = "SELECT * FROM tbl_admin WHERE username_admin = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-    // Jika data ditemukan, login berhasil
+    // Jika data ditemukan, lanjutkan ke validasi password
     if ($result->num_rows > 0) {
         // Mengambil data admin
         $admin = $result->fetch_assoc();
 
-        // Menyimpan session untuk admin
-        $_SESSION['username'] = $admin['username_admin'];
-        $_SESSION['nama'] = $admin['nama_admin'];
-        $_SESSION['id_admin'] = $admin['id_admin'];
-        $_SESSION['role'] = $admin['role']; // Menyimpan role (misalnya admin)
+        // Memeriksa password hash
+        if (password_verify($password, $admin['password'])) {
+            // Password valid, menyimpan session untuk admin
+            $_SESSION['username'] = $admin['username_admin'];
+            $_SESSION['nama'] = $admin['nama_admin'];
+            $_SESSION['id_admin'] = $admin['id_admin'];
+            $_SESSION['role'] = $admin['role']; // Menyimpan role (misalnya admin)
 
-        // Mengarahkan pengguna ke halaman dashboard admin
-        header("Location: $base_url");
-        exit();
+            // Mengarahkan pengguna ke halaman dashboard admin
+            header("Location: $base_url");
+            exit();
+        } else {
+            // Jika password salah
+            header("Location: $base_url/login.php?pesan=password_salah");
+            exit();
+        }
     } else {
-        // Jika username atau password tidak sesuai
-        header("Location: $base_url/login.php?pesan=gagal");
+        // Jika username tidak ditemukan
+        header("Location: $base_url/login.php?pesan=username_tidak_ditemukan");
         exit();
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -94,14 +105,15 @@ if (isset($_POST['submit'])) {
                                         ?>
                                     </div>
 
-                                    <form action="login.php" method="POST" class="user w-100">
+                                    <form action="login.php" method="POST" class="user w-100 mt-3">
                                         <div class="form-group">
                                             <input type="text" name="username" class="form-control form-control-user" placeholder="Masukkan Username...">
                                         </div>
-                                        <div class="form-group">
+                                        <div class="form-group mb-5">
                                             <input type="password" name="password" class="form-control form-control-user" placeholder="Masukkan Password...">
                                         </div>
-                                        <button type="submit" name="submit" class="btn btn-primary btn-user btn-block mt-5">
+                                        <hr>
+                                        <button type="submit" name="submit" class="btn btn-primary btn-user btn-block mt-4">
                                             Login
                                         </button>
                                     </form>

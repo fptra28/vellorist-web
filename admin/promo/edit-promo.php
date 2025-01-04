@@ -1,7 +1,7 @@
 <?php
+// Memulai session
 session_start();
 
-// Memeriksa apakah admin sudah login
 if (!isset($_SESSION['username'])) {
     header("Location: ./login.php");
     exit();
@@ -10,22 +10,73 @@ if (!isset($_SESSION['username'])) {
 // Menyertakan file konfigurasi database
 include '../app/config_query.php';
 
-// Fungsi untuk mendapatkan daftar promo
-function getPromo($conn)
-{
-    $query = "SELECT * FROM voucher";
-    $result = $conn->query($query);
+// Mendapatkan ID promo dari URL
+$promo_id = isset($_GET['id']) ? $_GET['id'] : null;
 
-    if ($result && $result->num_rows > 0) {
-        return $result->fetch_all(MYSQLI_ASSOC);
-    }
-
-    return []; // Kembalikan array kosong jika tidak ada data
+if ($promo_id === null) {
+    die("ID promo tidak ditemukan.");
 }
 
-$promoList = getPromo($conn);
-?>
+// Query untuk mendapatkan data promo berdasarkan ID
+$query = "SELECT * FROM voucher WHERE id_voucher = ?";
+$stmt = $conn->prepare($query);
 
+// Mengecek apakah query berhasil disiapkan
+if ($stmt === false) {
+    die('Query prepare failed: ' . $conn->error);
+}
+
+$stmt->bind_param("i", $promo_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$promo = $result->fetch_assoc();
+
+if (!$promo) {
+    die("Promo tidak ditemukan.");
+}
+
+// Memproses form saat tombol submit ditekan
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Mendapatkan data dari form
+    $kode = strtoupper(trim($_POST['kode']));  // Memastikan kode menggunakan huruf kapital
+    $diskon = trim($_POST['diskon']);
+    $tanggal_kadaluarsa = trim($_POST['date']);
+
+    // Validasi sederhana
+    if (empty($kode) || empty($diskon) || empty($tanggal_kadaluarsa)) {
+        $error = "Semua field wajib diisi.";
+    } else {
+        // Memastikan format diskon valid (misal: 25.00%)
+        if (!is_numeric($diskon) || $diskon <= 0 || $diskon > 100) {
+            $error = "Diskon harus dalam format yang valid (misalnya 25.00).";
+        } else {
+            // Update data promo di dalam database
+            $query = "UPDATE voucher SET kode_voucher = ?, diskon = ?, tanggal_kadaluarsa = ? WHERE id_voucher = ?";
+            $stmt = $conn->prepare($query);
+
+            // Mengecek apakah query update berhasil disiapkan
+            if ($stmt === false) {
+                die('Query prepare failed: ' . $conn->error);
+            }
+
+            // Menyiapkan data yang akan dimasukkan
+            $stmt->bind_param("sdsi", $kode, $diskon, $tanggal_kadaluarsa, $promo_id);
+
+            // Menjalankan query dan mengecek apakah berhasil
+            if ($stmt->execute()) {
+                // Berhasil mengupdate
+                header("Location: $base_url/promo");
+                exit();
+            } else {
+                // Jika terjadi kesalahan saat eksekusi query
+                $error = "Terjadi kesalahan saat mengupdate data: " . $conn->error;
+            }
+
+            $stmt->close();
+        }
+    }
+}
+?>
 
 
 <!DOCTYPE html>
@@ -38,7 +89,7 @@ $promoList = getPromo($conn);
     <meta name="description" content="" />
     <meta name="author" content="" />
 
-    <title>Vellorist - Promo</title>
+    <title>Vellorist - Edit Promo</title>
 
     <!-- Custom fonts for this template-->
     <link href="<?= $base_url ?>/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css" />
@@ -80,7 +131,7 @@ $promoList = getPromo($conn);
                     <span class="text-s">Pesanan</span></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="<?= $base_url ?>/kategori">
+                <a class="nav-link" href="<?= $base_url ?>/produk">
                     <i class="fa-solid fa-store"></i>
                     <span class="text-s">Produk</span></a>
             </li>
@@ -98,7 +149,7 @@ $promoList = getPromo($conn);
             <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 'Superadmin'): ?>
                 <li class="nav-item">
                     <a class="nav-link" href="<?= $base_url ?>/admin-management">
-                        <i class="fa-solid fa-user-tie"></i>
+                        <i class="fas fa-comments"></i>
                         <span class="text-s">Manajemen Admin</span></a>
                 </li>
             <?php endif; ?>
@@ -146,52 +197,31 @@ $promoList = getPromo($conn);
                 <div class="container-fluid">
                     <!-- Page Heading -->
                     <div class="d-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Promo</h1>
-                        <a href="<?= $base_url ?>/promo/add-promo.php" type="button" class="btn btn-primary" data-toggle="modal"
-                            data-target="#addProductModal">
-                            Tambah Promo
-                        </a>
+                        <h1 class="h3 mb-0 text-gray-800">Tambah Promo</h1>
                     </div>
 
                     <!-- Content Row -->
-                    <div class="row">
-                        <!-- Card Example -->
-                        <?php if (!empty($promoList)) : ?>
-                            <?php foreach ($promoList as $promo) : ?>
-                                <div class="col-xl-3 col-md-6 mb-4">
-                                    <div class="card border-left-success shadow-sm">
-                                        <div class="card-body">
-                                            <div class="d-flex flex-column align-items-start">
-                                                <!-- Kode Voucher -->
-                                                <h5 class="card-title text-success">
-                                                    <strong>Kode Voucher:</strong> <?= htmlspecialchars($promo['kode_voucher']) ?>
-                                                </h5>
-                                                <!-- Diskon -->
-                                                <p class="card-text text-dark">
-                                                    <strong>Diskon:</strong> <?= number_format($promo['diskon']) ?>%
-                                                </p>
-                                                <!-- Tanggal Kadaluarsa -->
-                                                <p class="card-text text-muted">
-                                                    <strong>Kadaluarsa:</strong> <?= date('d F Y', strtotime($promo['tanggal_kadaluarsa'])) ?>
-                                                </p>
-                                                <div class="w-100 d-flex justify-content-between">
-                                                    <!-- Tombol Edit -->
-                                                    <a href="<?= $base_url ?>/promo/edit-promo.php?id=<?= $promo['id_voucher'] ?>" type="button" class="btn btn-primary w-48 py-2">
-                                                        Edit
-                                                    </a>
-                                                    <!-- Tombol Hapus -->
-                                                    <a href="<?= $base_url ?>/promo/delete-promo.php?id=<?= $promo['id_voucher'] ?>" type="button" class="btn btn-danger w-48 py-2">
-                                                        Hapus
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                    <div class="container">
+                        <form action="" method="post">
+                            <div class="form-group">
+                                <label for="kode">Kode Voucher<span class="text-danger">* (TULIS DALAM HURUF KAPITAL)</span></label>
+                                <input type="text" class="form-control" id="kode" name="kode" value="<?= htmlspecialchars($promo['kode_voucher']) ?>" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="diskon">Diskon<span class="text-danger">* (Gunakan Format: 25.00%)</span></label>
+                                <input type="text" class="form-control" id="diskon" name="diskon" value="<?= htmlspecialchars($promo['diskon']) ?>" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="date">Tanggal Kadaluarsa<span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="date" name="date" value="<?= htmlspecialchars($promo['tanggal_kadaluarsa']) ?>" required>
+                            </div>
+                            <div>
+                                <div class="text-danger">
+                                    <?php if (isset($error)) echo $error; ?>
                                 </div>
-                            <?php endforeach; ?>
-                        <?php else : ?>
-                            <span colspan="8" class="text-center">Tidak ada data Promo.</span>
-                        <?php endif; ?>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 mt-5">SIMPAN PERUBAHAN</button>
+                        </form>
                     </div>
                 </div>
                 <!-- /.container-fluid -->

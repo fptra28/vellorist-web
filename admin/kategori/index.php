@@ -10,10 +10,10 @@ if (!isset($_SESSION['username'])) {
 // Menyertakan file konfigurasi database
 include '../app/config_query.php';
 
-// Fungsi untuk mendapatkan daftar promo
-function getPromo($conn)
+// Fungsi untuk mendapatkan daftar kategori
+function getCategoryList($conn)
 {
-    $query = "SELECT * FROM voucher";
+    $query = "SELECT * FROM kategori_produk ORDER BY id_kategori ASC";
     $result = $conn->query($query);
 
     if ($result && $result->num_rows > 0) {
@@ -23,7 +23,24 @@ function getPromo($conn)
     return []; // Kembalikan array kosong jika tidak ada data
 }
 
-$promoList = getPromo($conn);
+// Fungsi untuk mendapatkan jumlah produk per kategori
+function getJumlahProdukPerKategori($conn)
+{
+    $query = "SELECT id_kategori, COUNT(*) as jumlah_produk FROM produk GROUP BY id_kategori";
+    $result = $conn->query($query);
+
+    $jumlahProdukPerKategori = [];
+    if ($result && $result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $jumlahProdukPerKategori[$row['id_kategori']] = $row['jumlah_produk'];
+        }
+    }
+    return $jumlahProdukPerKategori;
+}
+
+// Mendapatkan daftar kategori dan jumlah produk per kategori
+$categoryList = getCategoryList($conn);
+$jumlah_produk_per_kategori = getJumlahProdukPerKategori($conn);
 ?>
 
 
@@ -38,7 +55,7 @@ $promoList = getPromo($conn);
     <meta name="description" content="" />
     <meta name="author" content="" />
 
-    <title>Vellorist - Promo</title>
+    <title>Vellorist - Dashboard</title>
 
     <!-- Custom fonts for this template-->
     <link href="<?= $base_url ?>/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css" />
@@ -84,7 +101,7 @@ $promoList = getPromo($conn);
                     <i class="fa-solid fa-store"></i>
                     <span class="text-s">Produk</span></a>
             </li>
-            <li class="nav-item active">
+            <li class="nav-item">
                 <a class="nav-link" href="<?= $base_url ?>/promo">
                     <i class="fa-solid fa-tag"></i>
                     <span class="text-s">Promo</span></a>
@@ -146,43 +163,53 @@ $promoList = getPromo($conn);
                 <div class="container-fluid">
                     <!-- Page Heading -->
                     <div class="d-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Promo</h1>
-                        <a href="<?= $base_url ?>/promo/add-promo.php" type="button" class="btn btn-primary" data-toggle="modal"
+                        <h1 class="h3 mb-0 text-gray-800">Kategori Produk</h1>
+                        <button type="button" class="btn btn-primary" data-toggle="modal"
                             data-target="#addProductModal">
-                            Tambah Promo
-                        </a>
+                            Tambah Kategori
+                        </button>
                     </div>
 
                     <!-- Content Row -->
                     <div class="row">
                         <!-- Card Example -->
-                        <?php if (!empty($promoList)) : ?>
-                            <?php foreach ($promoList as $promo) : ?>
+                        <?php if (!empty($categoryList)) : ?>
+                            <?php foreach ($categoryList as $category) : ?>
                                 <div class="col-xl-3 col-md-6 mb-4">
-                                    <div class="card border-left-success shadow-sm">
+                                    <div class="card border-left-primary shadow h-100 py-3 ps-2">
                                         <div class="card-body">
-                                            <div class="d-flex flex-column align-items-start">
-                                                <!-- Kode Voucher -->
-                                                <h5 class="card-title text-success">
-                                                    <strong>Kode Voucher:</strong> <?= htmlspecialchars($promo['kode_voucher']) ?>
-                                                </h5>
-                                                <!-- Diskon -->
-                                                <p class="card-text text-dark">
-                                                    <strong>Diskon:</strong> <?= number_format($promo['diskon']) ?>%
-                                                </p>
-                                                <!-- Tanggal Kadaluarsa -->
-                                                <p class="card-text text-muted">
-                                                    <strong>Kadaluarsa:</strong> <?= date('d F Y', strtotime($promo['tanggal_kadaluarsa'])) ?>
-                                                </p>
-                                                <div class="w-100 d-flex justify-content-between">
-                                                    <!-- Tombol Edit -->
-                                                    <a href="<?= $base_url ?>/promo/edit-promo.php?id=<?= $promo['id_voucher'] ?>" type="button" class="btn btn-primary w-48 py-2">
-                                                        Edit
-                                                    </a>
-                                                    <!-- Tombol Hapus -->
-                                                    <a href="<?= $base_url ?>/promo/delete-promo.php?id=<?= $promo['id_voucher'] ?>" type="button" class="btn btn-danger w-48 py-2">
-                                                        Hapus
-                                                    </a>
+                                            <div class="row no-gutters align-items-center">
+                                                <div class="col mr-2">
+                                                    <div class="font-weight-bold text-primary text-uppercase mb-2" style="font-size: 1.2rem;">
+                                                        <?= htmlspecialchars($category['nama_kategori']) ?>
+                                                    </div>
+                                                    <div class="text-sm text-gray-800">
+                                                        <!-- Menampilkan Jumlah Produk -->
+                                                        Jumlah Produk: <strong>
+                                                            <?= isset($jumlah_produk_per_kategori[$category['id_kategori']])
+                                                                ? $jumlah_produk_per_kategori[$category['id_kategori']]
+                                                                : 0 ?> Produk
+                                                        </strong>
+                                                    </div>
+                                                </div>
+                                                <div class="col">
+                                                    <div class="col-12 mb-3">
+                                                        <a href="<?= $base_url ?>/produk/list">
+                                                            <button type="button" class="btn btn-warning w-100 py-2" style="font-size: 1rem;">
+                                                                View
+                                                            </button>
+                                                        </a>
+                                                    </div>
+                                                    <div class="col-12 mb-3">
+                                                        <button type="button" class="btn btn-primary w-100 py-2" style="font-size: 1rem;">
+                                                            Edit
+                                                        </button>
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <button type="button" class="btn btn-danger w-100 py-2" style="font-size: 1rem;">
+                                                            Hapus
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -190,7 +217,7 @@ $promoList = getPromo($conn);
                                 </div>
                             <?php endforeach; ?>
                         <?php else : ?>
-                            <span colspan="8" class="text-center">Tidak ada data Promo.</span>
+                            <span colspan="8" class="text-center">Tidak ada data Kategori.</span>
                         <?php endif; ?>
                     </div>
                 </div>

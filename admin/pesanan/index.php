@@ -94,7 +94,7 @@ $pesananList = getPesananList($conn);
                     <span class="text-s">Pesanan</span></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="<?= $base_url ?>/produk">
+                <a class="nav-link" href="<?= $base_url ?>/kategori">
                     <i class="fa-solid fa-store"></i>
                     <span class="text-s">Produk</span></a>
             </li>
@@ -112,7 +112,7 @@ $pesananList = getPesananList($conn);
             <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 'Superadmin'): ?>
                 <li class="nav-item">
                     <a class="nav-link" href="<?= $base_url ?>/admin-management">
-                        <i class="fas fa-comments"></i>
+                        <i class="fa-solid fa-user-tie"></i>
                         <span class="text-s">Manajemen Admin</span></a>
                 </li>
             <?php endif; ?>

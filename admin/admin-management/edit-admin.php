@@ -10,22 +10,100 @@ if (!isset($_SESSION['username'])) {
 // Menyertakan file konfigurasi database
 include '../app/config_query.php';
 
-// Fungsi untuk mendapatkan daftar promo
-function getPromo($conn)
-{
-    $query = "SELECT * FROM voucher";
-    $result = $conn->query($query);
-
-    if ($result && $result->num_rows > 0) {
-        return $result->fetch_all(MYSQLI_ASSOC);
-    }
-
-    return []; // Kembalikan array kosong jika tidak ada data
+// Memeriksa apakah admin adalah Superadmin
+if ($_SESSION['role'] !== 'Superadmin') {
+    header("Location: $base_url"); // Arahkan ke halaman lain jika bukan Superadmin
+    exit();
 }
 
-$promoList = getPromo($conn);
-?>
+// Inisialisasi variabel untuk error dan sukses
+$error = '';
+$success = '';
+$id = ''; // Inisialisasi ID admin
 
+// Mendapatkan ID admin yang akan diedit dari parameter URL
+if (isset($_GET['id'])) {
+    $id = intval($_GET['id']);
+
+    // Ambil data admin berdasarkan ID
+    $query = "SELECT * FROM tbl_admin WHERE id_admin = ?";
+    $stmt = $conn->prepare($query);
+
+    if ($stmt) {
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            $admin = $result->fetch_assoc();
+        } else {
+            $error = "Admin tidak ditemukan.";
+        }
+
+        $stmt->close();
+    } else {
+        $error = "Gagal menyiapkan query: " . $conn->error;
+    }
+}
+
+// Memproses form saat tombol submit ditekan
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'])) {
+    // Mendapatkan data dari form
+    $id = intval($_POST['id']);
+    $nama = trim($_POST['nama']);
+    $username = trim($_POST['username']);
+    $password = trim($_POST['password']);
+    $role = trim($_POST['role']);
+
+    // Validasi sederhana
+    if (empty($nama) || empty($username) || empty($role)) {
+        $error = "Nama, Username, dan Role wajib diisi.";
+    } elseif (strlen($username) < 5) {
+        $error = "Username harus memiliki minimal 5 karakter.";
+    } else {
+        // Hash password jika diisi
+        $hashedPassword = !empty($password) ? password_hash($password, PASSWORD_DEFAULT) : null;
+
+        // Update data ke dalam database
+        if ($hashedPassword) {
+            $query = "UPDATE tbl_admin SET nama_admin = ?, username_admin = ?, password = ?, role = ? WHERE id_admin = ?";
+        } else {
+            $query = "UPDATE tbl_admin SET nama_admin = ?, username_admin = ?, role = ? WHERE id_admin = ?";
+        }
+
+        $stmt = $conn->prepare($query);
+
+        if ($stmt) {
+            if ($hashedPassword) {
+                $stmt->bind_param("ssssi", $nama, $username, $hashedPassword, $role, $id);
+            } else {
+                $stmt->bind_param("sssi", $nama, $username, $role, $id);
+            }
+
+            if ($stmt->execute()) {
+                // Berhasil menyimpan
+                $success = "Admin berhasil diperbarui.";
+                header("Location: $base_url/admin-management");
+                exit();
+            } else {
+                // Menangani error jika username sudah ada
+                if ($conn->errno === 1062) { // Error code untuk duplikat
+                    $error = "Username sudah digunakan. Gunakan username lain.";
+                } else {
+                    $error = "Terjadi kesalahan saat menyimpan data: " . $conn->error;
+                }
+            }
+
+            $stmt->close();
+        } else {
+            $error = "Gagal menyiapkan query: " . $conn->error;
+        }
+    }
+}
+
+// Menutup koneksi database
+$conn->close();
+?>
 
 
 <!DOCTYPE html>
@@ -38,7 +116,7 @@ $promoList = getPromo($conn);
     <meta name="description" content="" />
     <meta name="author" content="" />
 
-    <title>Vellorist - Promo</title>
+    <title>Vellorist - Edit Admin</title>
 
     <!-- Custom fonts for this template-->
     <link href="<?= $base_url ?>/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css" />
@@ -80,11 +158,11 @@ $promoList = getPromo($conn);
                     <span class="text-s">Pesanan</span></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="<?= $base_url ?>/kategori">
+                <a class="nav-link" href="<?= $base_url ?>/produk">
                     <i class="fa-solid fa-store"></i>
                     <span class="text-s">Produk</span></a>
             </li>
-            <li class="nav-item active">
+            <li class="nav-item">
                 <a class="nav-link" href="<?= $base_url ?>/promo">
                     <i class="fa-solid fa-tag"></i>
                     <span class="text-s">Promo</span></a>
@@ -96,9 +174,9 @@ $promoList = getPromo($conn);
             </li>
             <!-- Tampilkan Manajemen Admin hanya jika role adalah Superadmin -->
             <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 'Superadmin'): ?>
-                <li class="nav-item">
+                <li class="nav-item active">
                     <a class="nav-link" href="<?= $base_url ?>/admin-management">
-                        <i class="fa-solid fa-user-tie"></i>
+                        <i class="fas fa-comments"></i>
                         <span class="text-s">Manajemen Admin</span></a>
                 </li>
             <?php endif; ?>
@@ -146,51 +224,44 @@ $promoList = getPromo($conn);
                 <div class="container-fluid">
                     <!-- Page Heading -->
                     <div class="d-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Promo</h1>
-                        <a href="<?= $base_url ?>/promo/add-promo.php" type="button" class="btn btn-primary" data-toggle="modal"
-                            data-target="#addProductModal">
-                            Tambah Promo
-                        </a>
+                        <h1 class="h3 mb-0 text-gray-800">Edit Admin</h1>
                     </div>
 
                     <!-- Content Row -->
-                    <div class="row">
-                        <!-- Card Example -->
-                        <?php if (!empty($promoList)) : ?>
-                            <?php foreach ($promoList as $promo) : ?>
-                                <div class="col-xl-3 col-md-6 mb-4">
-                                    <div class="card border-left-success shadow-sm">
-                                        <div class="card-body">
-                                            <div class="d-flex flex-column align-items-start">
-                                                <!-- Kode Voucher -->
-                                                <h5 class="card-title text-success">
-                                                    <strong>Kode Voucher:</strong> <?= htmlspecialchars($promo['kode_voucher']) ?>
-                                                </h5>
-                                                <!-- Diskon -->
-                                                <p class="card-text text-dark">
-                                                    <strong>Diskon:</strong> <?= number_format($promo['diskon']) ?>%
-                                                </p>
-                                                <!-- Tanggal Kadaluarsa -->
-                                                <p class="card-text text-muted">
-                                                    <strong>Kadaluarsa:</strong> <?= date('d F Y', strtotime($promo['tanggal_kadaluarsa'])) ?>
-                                                </p>
-                                                <div class="w-100 d-flex justify-content-between">
-                                                    <!-- Tombol Edit -->
-                                                    <a href="<?= $base_url ?>/promo/edit-promo.php?id=<?= $promo['id_voucher'] ?>" type="button" class="btn btn-primary w-48 py-2">
-                                                        Edit
-                                                    </a>
-                                                    <!-- Tombol Hapus -->
-                                                    <a href="<?= $base_url ?>/promo/delete-promo.php?id=<?= $promo['id_voucher'] ?>" type="button" class="btn btn-danger w-48 py-2">
-                                                        Hapus
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </div>
+                    <div class="container">
+                        <?php if (isset($admin)): ?>
+                            <form action="" method="post">
+                                <div class="form-group">
+                                    <input type="hidden" name="id" value="<?= htmlspecialchars($admin['id_admin']) ?>">
+                                </div>
+                                <div class="form-group">
+                                    <label for="nama">Nama<span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="nama" name="nama" value="<?= htmlspecialchars($admin['nama_admin']) ?>" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="username">Username<span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="username" name="username" value="<?= htmlspecialchars($admin['username_admin']) ?>" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="password">Password <span class="text-danger">(kosongkan jika tidak diubah)</span></label>
+                                    <input type="password" class="form-control" id="password" name="password">
+                                </div>
+                                <div class="form-group">
+                                    <label for="level">Role<span class="text-danger">*</span></label>
+                                    <select class="form-control" id="role" name="role" required>
+                                        <option value="Superadmin" <?= $admin['role'] === 'Superadmin' ? 'selected' : '' ?>>Superadmin</option>
+                                        <option value="Admin" <?= $admin['role'] === 'Admin' ? 'selected' : '' ?>>Admin</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <div class="text-danger">
+                                        <?php if (isset($error)) echo $error; ?>
                                     </div>
                                 </div>
-                            <?php endforeach; ?>
-                        <?php else : ?>
-                            <span colspan="8" class="text-center">Tidak ada data Promo.</span>
+                                <button type="submit" class="btn btn-primary w-100 mt-5">SUBMIT</button>
+                            </form>
+                        <?php else: ?>
+                            <p>Data admin tidak ditemukan.</p>
                         <?php endif; ?>
                     </div>
                 </div>
