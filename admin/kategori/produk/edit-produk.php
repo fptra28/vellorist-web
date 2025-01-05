@@ -44,7 +44,6 @@ $stmt->close();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nama_produk = htmlspecialchars($_POST['nama_produk']);
     $harga = floatval($_POST['harga']);
-    $stok = intval($_POST['stok']);
     $deskripsi = htmlspecialchars($_POST['deskripsi']);
     $id_kategori = intval($_POST['id_kategori']);
 
@@ -88,7 +87,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         UPDATE produk SET 
             nama_produk = ?, 
             harga_produk = ?, 
-            stock_produk = ?, 
             deskripsi_produk = ?, 
             foto_produk = ?, 
             id_kategori = ? 
@@ -103,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         die("Error preparing update query: " . $conn->error);
     }
 
-    $stmt->bind_param("siissii", $nama_produk, $harga, $stok, $deskripsi, $new_file_name, $id_kategori, $id_produk);
+    $stmt->bind_param("sissii", $nama_produk, $harga, $deskripsi, $new_file_name, $id_kategori, $id_produk);
 
     if ($stmt->execute()) {
         // Redirect ke halaman produk dengan pesan sukses
@@ -256,11 +254,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="form-group mb-3">
                                 <label for="harga">Harga<span class="text-danger">*</span></label>
                                 <input type="number" class="form-control" id="harga" name="harga" value="<?= htmlspecialchars($product['harga_produk']) ?>" required>
-                            </div>
-
-                            <div class="form-group mb-3">
-                                <label for="stok">Stok<span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="stok" name="stok" value="<?= htmlspecialchars($product['stock_produk']) ?>" required>
                             </div>
 
                             <div class="form-group mb-3">

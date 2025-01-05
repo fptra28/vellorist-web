@@ -25,7 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nama_produk = htmlspecialchars(trim($_POST['nama_produk']));
     $id_kategori = intval($_POST['id_kategori']);
     $harga = floatval($_POST['harga']);
-    $stok = intval($_POST['stok']);
     $deskripsi = htmlspecialchars(trim($_POST['deskripsi']));
 
     // Validasi file gambar
@@ -59,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Query untuk menyimpan data ke dalam database
-    $query = "INSERT INTO produk (nama_produk, harga_produk, stock_produk, deskripsi_produk, foto_produk, id_kategori) VALUES (?, ?, ?, ?, ?, ?)";
+    $query = "INSERT INTO produk (nama_produk, harga_produk, deskripsi_produk, foto_produk, id_kategori) VALUES (?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($query);
 
     if ($stmt === false) {
@@ -67,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Bind parameter ke query
-    $stmt->bind_param("siisss", $nama_produk, $harga, $stok, $deskripsi, $new_file_name, $id_kategori);
+    $stmt->bind_param("siiss", $nama_produk, $harga, $deskripsi, $new_file_name, $id_kategori);
 
     // Eksekusi query
     if ($stmt->execute()) {
@@ -224,11 +223,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="form-group mb-3">
                                 <label for="harga">Harga<span class="text-danger">*</span></label>
                                 <input type="number" class="form-control" id="harga" name="harga" required>
-                            </div>
-
-                            <div class="form-group mb-3">
-                                <label for="stok">Stok<span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="stok" name="stok" required>
                             </div>
 
                             <div class="form-group mb-3">

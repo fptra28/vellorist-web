@@ -139,56 +139,57 @@ include '../app/config_query.php';
                     </div>
 
                     <!-- Form -->
-                    <form action="proses_pesanan.php" method="POST">
-                        <div class="mb-3">
-                            <label for="nama" class="form-label">Nama Pemesan</label>
-                            <input type="text" class="form-control" id="nama" name="nama" placeholder="Masukkan nama lengkap" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="alamat" class="form-label">Alamat</label>
-                            <textarea class="form-control" id="alamat" name="alamat" rows="3" placeholder="Masukkan alamat lengkap" required></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="telepon" class="form-label">Nomor Telepon</label>
-                            <input type="text" class="form-control" id="telepon" name="telepon" placeholder="Masukkan nomor telepon" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" placeholder="Masukkan email" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="produk" class="form-label">Produk</label>
-                            <select class="form-select" id="produk" name="produk" required>
-                                <option value="">Pilih produk</option>
-                                <?php foreach ($products as $product): ?>
-                                    <option value="<?php echo $product['id_produk']; ?>"><?php echo $product['nama_produk']; ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="keterangan" class="form-label">Keterangan</label>
-                            <textarea class="form-control" id="keterangan" name="keterangan" rows="3" placeholder="Masukkan keterangan pesanan" required></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="status" class="form-label">Status Pemesanan</label>
-                            <select class="form-select" id="status" name="status" required>
-                                <option value="Dalam Proses">Dalam Proses</option>
-                                <option value="Selesai">Selesai</option>
-                                <option value="Dibatalkan">Dibatalkan</option>
-                                <option value="Dalam Pengiriman">Dalam Pengiriman</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="status" class="form-label">Metode Pembayaran</label>
-                            <select class="form-select" id="pembayaran" name="pembayaran" required>
-                                <option value="Tunai">Tunai</option>
-                                <option value="Transfer">Transfer</option>
-                                <option value="Qris">Qris</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                    </form>
-
+                    <div class="container">
+                        <form action="proses_pesanan.php" method="POST">
+                            <div class="mb-3">
+                                <label for="nama" class="form-label">Nama Pemesan</label>
+                                <input type="text" class="form-control" id="nama" name="nama" placeholder="Masukkan nama lengkap" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="alamat" class="form-label">Alamat</label>
+                                <textarea class="form-control" id="alamat" name="alamat" rows="3" placeholder="Masukkan alamat lengkap" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="telepon" class="form-label">Nomor Telepon</label>
+                                <input type="text" class="form-control" id="telepon" name="telepon" placeholder="Masukkan nomor telepon" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" placeholder="Masukkan email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="produk" class="form-label">Produk</label>
+                                <select class="form-select" id="produk" name="produk" required>
+                                    <option value="">Pilih produk</option>
+                                    <?php foreach ($products as $product): ?>
+                                        <option value="<?php echo $product['id_produk']; ?>"><?php echo $product['nama_produk']; ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="keterangan" class="form-label">Keterangan</label>
+                                <textarea class="form-control" id="keterangan" name="keterangan" rows="3" placeholder="Masukkan keterangan pesanan" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Status Pemesanan</label>
+                                <select class="form-select" id="status" name="status" required>
+                                    <option value="Dalam Proses">Dalam Proses</option>
+                                    <option value="Selesai">Selesai</option>
+                                    <option value="Dibatalkan">Dibatalkan</option>
+                                    <option value="Dalam Pengiriman">Dalam Pengiriman</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Metode Pembayaran</label>
+                                <select class="form-select" id="pembayaran" name="pembayaran" required>
+                                    <option value="Tunai">Tunai</option>
+                                    <option value="Transfer">Transfer</option>
+                                    <option value="Qris">Qris</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </div>
                 </div>
                 <!-- /.container-fluid -->
             </div>
