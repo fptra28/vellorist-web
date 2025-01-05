@@ -13,6 +13,7 @@ include '../app/config_query.php';
 // Mendapatkan ID promo dari URL
 $promo_id = isset($_GET['id']) ? $_GET['id'] : null;
 
+// Id Promo apakah ada di database
 if ($promo_id === null) {
     die("ID promo tidak ditemukan.");
 }
@@ -26,6 +27,7 @@ if ($stmt === false) {
     die('Query prepare failed: ' . $conn->error);
 }
 
+// Binding parameter dan eksekusi query
 $stmt->bind_param("i", $promo_id);
 $stmt->execute();
 $result = $stmt->get_result();

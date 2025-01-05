@@ -33,6 +33,7 @@ function getProductsByCategory($id_kategori)
     return [];
 }
 
+// Fungsi untuk mengambil data kategori berdasarkan id_kategori
 function getCategory($conn, $id_kategori)
 {
     $query = "SELECT * FROM kategori_produk WHERE id_kategori = ?";

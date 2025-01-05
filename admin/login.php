@@ -85,7 +85,7 @@ if (isset($_POST['submit'])) {
                     <div class="card-body p-0">
                         <div class="row">
                             <div class="col-lg-6 d-none d-lg-block bg-login-image">
-                                <img class="img-fluid" src="../assets/id-11134207-7qula-ljz8cwwtsgte34.jpeg" alt="login">
+                                <img class="img-fluid" src="<?= $base_url ?>/assets-admin/id-11134207-7qula-ljz8cwwtsgte34.jpeg" alt="login">
                             </div>
                             <div class="col-lg-6">
                                 <div class="p-5 d-flex flex-column align-items-center justify-content-center">
