@@ -55,7 +55,7 @@ $jumlah_produk_per_kategori = getJumlahProdukPerKategori($conn);
     <meta name="description" content="" />
     <meta name="author" content="" />
 
-    <title>Vellorist - Dashboard</title>
+    <title>Vellorist - Kategori</title>
 
     <!-- Custom fonts for this template-->
     <link href="<?= $base_url ?>/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css" />
@@ -77,7 +77,7 @@ $jumlah_produk_per_kategori = getJumlahProdukPerKategori($conn);
         <!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-dark sidebar sidebar-dark accordion" id="accordionSidebar">
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="<?= $base_url ?>">
                 <img src="../assets-admin/logo-obly.png" alt="logo-vellorist" height="35">
                 <div class="sidebar-brand-text mx-3">Vellorist</div>
             </a>
@@ -96,7 +96,7 @@ $jumlah_produk_per_kategori = getJumlahProdukPerKategori($conn);
                     <i class="fas fa-bag-shopping"></i>
                     <span class="text-s">Pesanan</span></a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item active">
                 <a class="nav-link" href="<?= $base_url ?>/kategori">
                     <i class="fa-solid fa-store"></i>
                     <span class="text-s">Produk</span></a>
@@ -164,10 +164,10 @@ $jumlah_produk_per_kategori = getJumlahProdukPerKategori($conn);
                     <!-- Page Heading -->
                     <div class="d-flex align-items-center justify-content-between mb-4">
                         <h1 class="h3 mb-0 text-gray-800">Kategori Produk</h1>
-                        <button type="button" class="btn btn-primary" data-toggle="modal"
+                        <a href="<?= $base_url ?>/kategori/add-kategori.php" type="button" class="btn btn-primary" data-toggle="modal"
                             data-target="#addProductModal">
                             Tambah Kategori
-                        </button>
+                        </a>
                     </div>
 
                     <!-- Content Row -->
@@ -176,40 +176,37 @@ $jumlah_produk_per_kategori = getJumlahProdukPerKategori($conn);
                         <?php if (!empty($categoryList)) : ?>
                             <?php foreach ($categoryList as $category) : ?>
                                 <div class="col-xl-3 col-md-6 mb-4">
-                                    <div class="card border-left-primary shadow h-100 py-3 ps-2">
+                                    <div class="card border-left-primary shadow-sm">
                                         <div class="card-body">
-                                            <div class="row no-gutters align-items-center">
-                                                <div class="col mr-2">
-                                                    <div class="font-weight-bold text-primary text-uppercase mb-2" style="font-size: 1.2rem;">
-                                                        <?= htmlspecialchars($category['nama_kategori']) ?>
-                                                    </div>
-                                                    <div class="text-sm text-gray-800">
-                                                        <!-- Menampilkan Jumlah Produk -->
-                                                        Jumlah Produk: <strong>
-                                                            <?= isset($jumlah_produk_per_kategori[$category['id_kategori']])
-                                                                ? $jumlah_produk_per_kategori[$category['id_kategori']]
-                                                                : 0 ?> Produk
-                                                        </strong>
-                                                    </div>
-                                                </div>
-                                                <div class="col">
-                                                    <div class="col-12 mb-3">
-                                                        <a href="<?= $base_url ?>/produk/list">
-                                                            <button type="button" class="btn btn-warning w-100 py-2" style="font-size: 1rem;">
-                                                                View
-                                                            </button>
-                                                        </a>
-                                                    </div>
-                                                    <div class="col-12 mb-3">
-                                                        <button type="button" class="btn btn-primary w-100 py-2" style="font-size: 1rem;">
-                                                            Edit
-                                                        </button>
-                                                    </div>
-                                                    <div class="col-12">
-                                                        <button type="button" class="btn btn-danger w-100 py-2" style="font-size: 1rem;">
-                                                            Hapus
-                                                        </button>
-                                                    </div>
+                                            <div class="d-flex flex-column align-items-start">
+                                                <!-- Kode Voucher -->
+                                                <h5 class="card-title text-primary font-weight-bold text-primary mb-2">
+                                                    <?= htmlspecialchars($category['nama_kategori']) ?>
+                                                </h5>
+                                                <!-- Diskon -->
+                                                <p class="card-text text-dark">
+                                                    Jumlah Produk:
+                                                    <strong>
+                                                        <?= isset($jumlah_produk_per_kategori[$category['id_kategori']])
+                                                            ? $jumlah_produk_per_kategori[$category['id_kategori']]
+                                                            : 0 ?> Produk
+                                                    </strong>
+                                                </p>
+                                                <div class="w-100 d-flex justify-content-between gap-2">
+                                                    <!-- Tombol View -->
+                                                    <a href="<?= $base_url ?>/kategori/produk/index.php?id=<?= $category['id_kategori'] ?>" class="btn btn-warning flex-grow-1 py-2">
+                                                        Lihat
+                                                    </a>
+                                                    <!-- Tombol Edit -->
+                                                    <a href="<?= $base_url ?>/kategori/edit-kategori.php?id=<?= $category['id_kategori'] ?>" class="btn btn-primary flex-grow-1 py-2">
+                                                        Edit
+                                                    </a>
+                                                    <!-- Tombol Hapus -->
+                                                    <a href="<?= $base_url ?>/kategori/delete-kategori.php?id=<?= $category['id_kategori'] ?>"
+                                                        class="btn btn-danger flex-grow-1 py-2"
+                                                        onclick="return confirm('Apakah Anda yakin ingin menghapus kategori ini?')">
+                                                        Hapus
+                                                    </a>
                                                 </div>
                                             </div>
                                         </div>
@@ -243,6 +240,8 @@ $jumlah_produk_per_kategori = getJumlahProdukPerKategori($conn);
     <a class="scroll-to-top rounded" href="#page-top">
         <i class="fas fa-angle-up"></i>
     </a>
+
+    <script src="<?= $base_url ?>/js/script.js"></script>
 
     <!-- Bootstrap core JavaScript-->
     <script src="<?= $base_url ?>/vendor/jquery/jquery.min.js"></script>

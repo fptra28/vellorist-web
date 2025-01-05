@@ -70,7 +70,7 @@ $ulasanList = getUlasan($conn);
         <!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-dark sidebar sidebar-dark accordion" id="accordionSidebar">
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="<?= $base_url ?>">
                 <img src="../assets-admin/logo-obly.png" alt="logo-vellorist" height="35">
                 <div class="sidebar-brand-text mx-3">Vellorist</div>
             </a>

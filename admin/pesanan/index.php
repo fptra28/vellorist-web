@@ -10,9 +10,16 @@ if (!isset($_SESSION['username'])) {
 // Menyertakan file konfigurasi database
 include '../app/config_query.php';
 
+// Mengambil nilai pencarian dari URL jika ada
+$search = $_GET['search'] ?? '';  // Default ke string kosong jika tidak ada
+
 // Fungsi untuk mendapatkan daftar pesanan
-function getPesananList($conn)
+function getPesananList($conn, $search = '')
 {
+    // Menangani pencarian menggunakan parameter 'search' dari URL
+    $searchTerm = $conn->real_escape_string($search);  // Tanpa '%' untuk pencarian tepat
+
+    // Query untuk mencari berdasarkan id_pesanan atau menampilkan semua data jika kosong
     $query = "
         SELECT 
             pesanan.id_pesanan,
@@ -26,9 +33,25 @@ function getPesananList($conn)
         FROM pesanan
         LEFT JOIN pelanggan ON pesanan.id_pelanggan = pelanggan.id_pelanggan
         LEFT JOIN produk ON pesanan.id_produk = produk.id_produk
+        WHERE 
+            (pesanan.id_pesanan = ? OR ? = '')  -- Mencari ID yang sesuai atau menampilkan semua data jika search kosong
         ORDER BY pesanan.tanggal_pemesanan DESC
     ";
-    $result = $conn->query($query);
+
+    // Menyiapkan statement dan mengikat parameter pencarian
+    $stmt = $conn->prepare($query);
+    if ($stmt === false) {
+        die("Error preparing statement: " . $conn->error);
+    }
+
+    // Menggunakan parameter bind untuk pencarian
+    $stmt->bind_param('ss', $searchTerm, $search);  // 'ss' untuk 2 parameter string
+
+    // Menjalankan query
+    $stmt->execute();
+
+    // Mendapatkan hasil query
+    $result = $stmt->get_result();
 
     if ($result && $result->num_rows > 0) {
         return $result->fetch_all(MYSQLI_ASSOC);
@@ -38,7 +61,7 @@ function getPesananList($conn)
 }
 
 // Mendapatkan daftar pesanan
-$pesananList = getPesananList($conn);
+$pesananList = getPesananList($conn, $search);
 ?>
 
 
@@ -74,7 +97,7 @@ $pesananList = getPesananList($conn);
         <!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-dark sidebar sidebar-dark accordion" id="accordionSidebar">
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="<?= $base_url ?>">
                 <img src="../assets-admin/logo-obly.png" alt="logo-vellorist" height="35">
                 <div class="sidebar-brand-text mx-3">Vellorist</div>
             </a>
@@ -161,16 +184,27 @@ $pesananList = getPesananList($conn);
                     <!-- Page Heading -->
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         <h1 class="h3 mb-0 text-gray-800">Pesanan</h1>
-                        <a href="./add-pesanan.php">
-                            <button type="button" class="btn btn-primary">Tambahkan Pesanan</button>
-                        </a>
+                        <div class="d-flex">
+                            <!-- Search Bar -->
+                            <form method="get" action="index.php" class="d-flex">
+                                <div class="input-group w-50 mr-3">
+                                    <!-- Kotak yang menyatu dengan input search -->
+                                    <span class="input-group-text">V-</span>
+                                    <input type="text" name="search" class="form-control" placeholder="Search pesanan" value="<?= htmlspecialchars($search) ?>" aria-label="Search Admin">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Search</button>
+                            </form>
+                            <a href="./add-pesanan.php">
+                                <button type="button" class="btn btn-primary">Tambahkan Pesanan</button>
+                            </a>
+                        </div>
                     </div>
 
                     <!-- Tabel Pesanan -->
                     <div class="table-responsive">
                         <table class="table table-striped table-bordered">
                             <thead class="table-dark">
-                                <tr>
+                                <tr class="text-center">
                                     <th>ID Pesanan</th>
                                     <th>Nama Pelanggan</th>
                                     <th>Tanggal Pemesanan</th>
@@ -184,12 +218,12 @@ $pesananList = getPesananList($conn);
                             <tbody>
                                 <?php if (!empty($pesananList)) : ?>
                                     <?php foreach ($pesananList as $pesanan) : ?>
-                                        <tr>
-                                            <td><?= htmlspecialchars($pesanan['id_pesanan']) ?></td>
+                                        <tr class="text-center">
+                                            <td>V-<?= htmlspecialchars($pesanan['id_pesanan']) ?></td>
                                             <td><?= htmlspecialchars($pesanan['nama_pelanggan']) ?></td>
                                             <td><?= htmlspecialchars($pesanan['tanggal_pemesanan']) ?></td>
                                             <td><?= htmlspecialchars($pesanan['nama_produk']) ?></td>
-                                            <td>IDR <?= number_format($pesanan['total_harga'], 2) ?></td>
+                                            <td>Rp <?= number_format($pesanan['total_harga'], 0, ',', '.') ?></td>
                                             <td><?= htmlspecialchars($pesanan['status_pemesanan']) ?></td>
                                             <td><?= htmlspecialchars($pesanan['metode_pembayaran']) ?></td>
                                             <td><?= htmlspecialchars($pesanan['keterangan']) ?></td>

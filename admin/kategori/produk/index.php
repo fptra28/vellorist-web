@@ -1,58 +1,58 @@
 <?php
-// Memulai session
 session_start();
 
+// Memeriksa apakah admin sudah login
 if (!isset($_SESSION['username'])) {
     header("Location: ./login.php");
     exit();
 }
 
 // Menyertakan file konfigurasi database
-include '../app/config_query.php';
+include "../../app/config_query.php";
+include "../../../app/config.php";
 
-// Memproses form saat tombol submit ditekan
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Mendapatkan data dari form
-    $kode = strtoupper(trim($_POST['kode']));  // Memastikan kode menggunakan huruf kapital
-    $diskon = trim($_POST['diskon']);
-    $tanggal_kadaluarsa = trim($_POST['date']);
+// Mendapatkan id_kategori dari query string
+$id_kategori = isset($_GET['id']) ? $_GET['id'] : 0;
 
-    // Validasi sederhana
-    if (empty($kode) || empty($diskon) || empty($tanggal_kadaluarsa)) {
-        $error = "Semua field wajib diisi.";
-    } else {
-        // Memastikan format diskon valid (misal: 25.00%)
-        if (!is_numeric($diskon) || $diskon <= 0 || $diskon > 100) {
-            $error = "Diskon harus dalam format yang valid (misalnya 25.00).";
-        } else {
-            // Menyimpan data ke dalam database
-            $query = "INSERT INTO voucher (kode_voucher, diskon, tanggal_kadaluarsa) VALUES (?, ?, ?)";
-            $stmt = $conn->prepare($query);
+// Fungsi untuk mengambil data produk berdasarkan id_kategori
+function getProductsByCategory($id_kategori)
+{
+    global $conn;
 
-            if ($stmt) {
-                // Menyiapkan data yang akan dimasukkan
-                $stmt->bind_param("sds", $kode, $diskon, $tanggal_kadaluarsa);
+    $query = "SELECT * FROM produk WHERE id_kategori = ?";
+    if ($stmt = $conn->prepare($query)) {
+        $stmt->bind_param("i", $id_kategori);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $products = $result->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
 
-                // Menjalankan query dan mengecek apakah berhasil
-                if ($stmt->execute()) {
-                    // Berhasil menyimpan
-                    header("Location: $base_url/promo");
-                    exit();
-                } else {
-                    // Jika terjadi kesalahan saat eksekusi query
-                    $error = "Terjadi kesalahan saat menyimpan data: " . $conn->error;
-                }
+        return $products;
+    }
 
-                $stmt->close();
-            } else {
-                // Jika gagal mempersiapkan query
-                $error = "Gagal menyiapkan query.";
-            }
+    return [];
+}
+
+function getCategory($conn, $id_kategori)
+{
+    $query = "SELECT * FROM kategori_produk WHERE id_kategori = ?";
+    if ($stmt = $conn->prepare($query)) {
+        $stmt->bind_param("i", $id_kategori);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows > 0) {
+            return $result->fetch_assoc(); // Hanya ambil satu kategori
         }
     }
-}
-?>
 
+    return null; // Kembalikan null jika tidak ditemukan kategori
+}
+
+
+// Ambil produk berdasarkan id_kategori
+$productList = getProductsByCategory($id_kategori);
+$category = getCategory($conn, $id_kategori);
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="description" content="" />
     <meta name="author" content="" />
 
-    <title>Vellorist - Tambah Promo</title>
+    <title>Vellorist - Kategori</title>
 
     <!-- Custom fonts for this template-->
     <link href="<?= $base_url ?>/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css" />
@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <ul class="navbar-nav bg-gradient-dark sidebar sidebar-dark accordion" id="accordionSidebar">
             <!-- Sidebar - Brand -->
             <a class="sidebar-brand d-flex align-items-center justify-content-center" href="<?= $base_url ?>">
-                <img src="../assets-admin/logo-obly.png" alt="logo-vellorist" height="35">
+                <img src="<?= $base_url ?>/assets-admin/logo-obly.png" alt="logo-vellorist" height="35">
                 <div class="sidebar-brand-text mx-3">Vellorist</div>
             </a>
 
@@ -105,12 +105,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <i class="fas fa-bag-shopping"></i>
                     <span class="text-s">Pesanan</span></a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="<?= $base_url ?>/produk">
+            <li class="nav-item active">
+                <a class="nav-link" href="<?= $base_url ?>/kategori">
                     <i class="fa-solid fa-store"></i>
                     <span class="text-s">Produk</span></a>
             </li>
-            <li class="nav-item active">
+            <li class="nav-item">
                 <a class="nav-link" href="<?= $base_url ?>/promo">
                     <i class="fa-solid fa-tag"></i>
                     <span class="text-s">Promo</span></a>
@@ -171,35 +171,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
                     <!-- Page Heading -->
-                    <div class="d-flex align-items-center mb-4">
-                        <a href="<?= $base_url ?>/promo">
-                            <button type="button" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <a href="<?= $base_url ?>/kategori">
+                                <button type="button" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                            </a>
+                            <h1 class="h3 mb-0 text-gray-800">Produk <?= htmlspecialchars($category['nama_kategori']) ?></h1>
+                        </div>
+                        <a href="<?= $base_url ?>/kategori/produk/add-produk.php?id_kategori=<?= $category['id_kategori'] ?>" type="button" class="btn btn-primary">
+                            Tambah Produk
                         </a>
-                        <h1 class="h3 mb-0 ms-3 text-gray-800">Tambah Promo</h1>
                     </div>
 
                     <!-- Content Row -->
-                    <div class="container">
-                        <form action="" method="post">
-                            <div class="form-group">
-                                <label for="kode">Kode Voucher<span class="text-danger">* (TULIS DALAM HURUF KAPITAL)</span></label>
-                                <input type="text" class="form-control" id="kode" name="kode" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="diskon">Diskon<span class="text-danger">* (Gunakan Format: 25.00%)</span></label>
-                                <input type="text" class="form-control" id="diskon" name="diskon" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="date">Tanggal Kadaluarsa<span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="date" name="date" required>
-                            </div>
-                            <div>
-                                <div class="text-danger">
-                                    <?php if (isset($error)) echo $error; ?>
+                    <div class="row">
+                        <!-- Card Example -->
+                        <?php if (!empty($productList)) : ?>
+                            <?php foreach ($productList as $product): ?>
+                                <div class="col-md-4 col-sm-6 mb-4">
+                                    <div class="card shadow-sm d-flex flex-row" style="height: 200px; overflow: hidden; border-radius: 10px;">
+                                        <!-- Gambar Produk di Samping Kiri -->
+                                        <img src="<?= $url ?>/assets/uploads/<?= htmlspecialchars($product['foto_produk']) ?>"
+                                            class="card-img-left"
+                                            alt="Produk Image"
+                                            style="height: 100%; object-fit: cover;">
+                                        <!-- Body Card di Samping Kanan -->
+                                        <div class="card-body d-flex flex-column justify-content-between p-2">
+                                            <div>
+                                                <h5 class="card-title"><?= htmlspecialchars($product['nama_produk']) ?></h5>
+                                                <div class="card-text text-muted fs-6 d-flex justify-content-around mb-2 gap-2">
+                                                    <p class="mb-0 badge text-bg-success flex-grow-1 fs-6">
+                                                        Harga: Rp <?= number_format($product['harga_produk'], 0, ',', '.') ?>
+                                                    </p>
+                                                </div>
+                                                <i class="card-text fs-6">"<?= htmlspecialchars($product['deskripsi_produk']) ?>"</i>
+                                            </div>
+                                            <!-- Tombol Aksi -->
+                                            <div class="d-flex justify-content-between gap-2">
+                                                <a href="edit-produk.php?id=<?= $product['id_produk'] ?>" class="btn btn-primary flex-grow-1">Edit</a>
+                                                <a href="<?= $base_url ?>/kategori/produk/delete-produk/index.php?id=<?= $product['id_produk'] ?>&id_kategori=<?= $product['id_kategori'] ?>"
+                                                    class="btn btn-danger flex-grow-1"
+                                                    onclick="return confirm('Yakin ingin menghapus produk ini?');">Hapus</a>
+
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100 mt-5">SUBMIT</button>
-                        </form>
+                            <?php endforeach; ?>
+                        <?php else : ?>
+                            <span colspan="8" class="text-center">Tidak ada data Produk untuk kategori <strong><?= htmlspecialchars($category['nama_kategori']) ?></strong>.</span>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <!-- /.container-fluid -->
@@ -224,6 +245,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <a class="scroll-to-top rounded" href="#page-top">
         <i class="fas fa-angle-up"></i>
     </a>
+
+    <script src="<?= $base_url ?>/js/script.js"></script>
 
     <!-- Bootstrap core JavaScript-->
     <script src="<?= $base_url ?>/vendor/jquery/jquery.min.js"></script>

@@ -12,7 +12,7 @@ if (isset($_POST['submit'])) {
 
     // Validasi input kosong
     if (empty($username) || empty($password)) {
-        header("Location: $base_url/login.php?pesan=empty");
+        header("Location: $base_url/login.php?error=1");
         exit();
     }
 
@@ -41,12 +41,12 @@ if (isset($_POST['submit'])) {
             exit();
         } else {
             // Jika password salah
-            header("Location: $base_url/login.php?pesan=password_salah");
+            header("Location: $base_url/login.php?error=2");
             exit();
         }
     } else {
         // Jika username tidak ditemukan
-        header("Location: $base_url/login.php?pesan=username_tidak_ditemukan");
+        header("Location: $base_url/login.php?error=3");
         exit();
     }
 }
@@ -95,11 +95,13 @@ if (isset($_POST['submit'])) {
 
                                     <div class="mb-4">
                                         <?php
-                                        if (isset($_GET['pesan'])) {
-                                            if ($_GET['pesan'] == "gagal") {
-                                                echo '<i class="text-danger">Login Gagal! Username atau Password tidak sesuai!</i>';
-                                            } else if ($_GET['pesan'] == "empty") {
+                                        if (isset($_GET['error'])) {
+                                            if ($_GET['error'] == "1") {
                                                 echo '<i class="text-danger">Username atau Password tidak boleh kosong!</i>';
+                                            } else if ($_GET['error'] == "2") {
+                                                echo '<i class="text-danger">Login Gagal! Password tidak sesuai!!</i>';
+                                            } else if ($_GET['error'] == "3") {
+                                                echo '<i class="text-danger">Login Gagal! Username tidak ditemukan!</i>';
                                             }
                                         }
                                         ?>

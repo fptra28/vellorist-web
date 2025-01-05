@@ -72,7 +72,7 @@ $adminList = getAdmin($conn, $search);
         <!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-dark sidebar sidebar-dark accordion" id="accordionSidebar">
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="<?= $base_url ?>">
                 <img src="../assets-admin/logo-obly.png" alt="logo-vellorist" height="35">
                 <div class="sidebar-brand-text mx-3">Vellorist</div>
             </a>
@@ -209,7 +209,10 @@ $adminList = getAdmin($conn, $search);
                                                     <button type="button" class="btn btn-primary w-100">Edit</button>
                                                 </a>
                                                 <a href="./delete-admin.php?id=<?= $admin['id_admin'] ?>" class="w-50">
-                                                    <button type="button" class="btn btn-danger w-100">Delete</button>
+                                                    <button type="button" class="btn btn-danger w-100"
+                                                        onclick="return confirm('Apakah Anda yakin ingin menghapus Admin ini?');">
+                                                        Delete
+                                                    </button>
                                                 </a>
                                             </td>
                                         </tr>

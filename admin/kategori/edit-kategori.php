@@ -10,47 +10,71 @@ if (!isset($_SESSION['username'])) {
 // Menyertakan file konfigurasi database
 include '../app/config_query.php';
 
-// Memproses form saat tombol submit ditekan
+// Inisialisasi variabel untuk error
+$error = '';
+
+// Mendapatkan ID kategori dari URL
+$id_kategori = $_GET['id'] ?? null;
+
+// Jika ID tidak ada, redirect ke halaman kategori
+if (!$id_kategori) {
+    header("Location: $base_url/kategori");
+    exit();
+}
+
+// Ambil data kategori berdasarkan ID
+$query = "SELECT * FROM kategori_produk WHERE id_kategori = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("i", $id_kategori);
+$stmt->execute();
+$result = $stmt->get_result();
+
+// Jika kategori tidak ditemukan
+if ($result->num_rows === 0) {
+    header("Location: $base_url/kategori");
+    exit();
+}
+
+// Ambil data kategori
+$kategori = $result->fetch_assoc();
+
+// Jika form disubmit
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Mendapatkan data dari form
-    $kode = strtoupper(trim($_POST['kode']));  // Memastikan kode menggunakan huruf kapital
-    $diskon = trim($_POST['diskon']);
-    $tanggal_kadaluarsa = trim($_POST['date']);
+    // Ambil input dari form
+    $nama_kategori = trim($_POST['kategori']);
 
-    // Validasi sederhana
-    if (empty($kode) || empty($diskon) || empty($tanggal_kadaluarsa)) {
-        $error = "Semua field wajib diisi.";
+    // Validasi input
+    if (empty($nama_kategori)) {
+        $error = "Nama kategori tidak boleh kosong.";
     } else {
-        // Memastikan format diskon valid (misal: 25.00%)
-        if (!is_numeric($diskon) || $diskon <= 0 || $diskon > 100) {
-            $error = "Diskon harus dalam format yang valid (misalnya 25.00).";
-        } else {
-            // Menyimpan data ke dalam database
-            $query = "INSERT INTO voucher (kode_voucher, diskon, tanggal_kadaluarsa) VALUES (?, ?, ?)";
-            $stmt = $conn->prepare($query);
+        // Query untuk mengupdate kategori
+        $query = "UPDATE kategori_produk SET nama_kategori = ? WHERE id_kategori = ?";
+        $stmt = $conn->prepare($query);
 
-            if ($stmt) {
-                // Menyiapkan data yang akan dimasukkan
-                $stmt->bind_param("sds", $kode, $diskon, $tanggal_kadaluarsa);
-
-                // Menjalankan query dan mengecek apakah berhasil
-                if ($stmt->execute()) {
-                    // Berhasil menyimpan
-                    header("Location: $base_url/promo");
-                    exit();
-                } else {
-                    // Jika terjadi kesalahan saat eksekusi query
-                    $error = "Terjadi kesalahan saat menyimpan data: " . $conn->error;
-                }
-
-                $stmt->close();
-            } else {
-                // Jika gagal mempersiapkan query
-                $error = "Gagal menyiapkan query.";
-            }
+        if ($stmt === false) {
+            die('Error preparing statement: ' . $conn->error);
         }
+
+        // Binding parameter
+        $stmt->bind_param("si", $nama_kategori, $id_kategori);
+
+        // Eksekusi query
+        if ($stmt->execute()) {
+            // Berhasil memperbarui kategori
+            header("Location: $base_url/kategori");
+            exit();
+        } else {
+            // Gagal memperbarui kategori
+            $error = "Terjadi kesalahan saat memperbarui kategori.";
+        }
+
+        // Menutup prepared statement
+        $stmt->close();
     }
 }
+
+// Menutup koneksi database
+$conn->close();
 ?>
 
 
@@ -64,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="description" content="" />
     <meta name="author" content="" />
 
-    <title>Vellorist - Tambah Promo</title>
+    <title>Vellorist - Tambah Kategori</title>
 
     <!-- Custom fonts for this template-->
     <link href="<?= $base_url ?>/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css" />
@@ -105,12 +129,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <i class="fas fa-bag-shopping"></i>
                     <span class="text-s">Pesanan</span></a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item active">
                 <a class="nav-link" href="<?= $base_url ?>/produk">
                     <i class="fa-solid fa-store"></i>
                     <span class="text-s">Produk</span></a>
             </li>
-            <li class="nav-item active">
+            <li class="nav-item">
                 <a class="nav-link" href="<?= $base_url ?>/promo">
                     <i class="fa-solid fa-tag"></i>
                     <span class="text-s">Promo</span></a>
@@ -172,26 +196,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="container-fluid">
                     <!-- Page Heading -->
                     <div class="d-flex align-items-center mb-4">
-                        <a href="<?= $base_url ?>/promo">
+                        <a href="<?= $base_url ?>/kategori">
                             <button type="button" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Back</button>
                         </a>
-                        <h1 class="h3 mb-0 ms-3 text-gray-800">Tambah Promo</h1>
+                        <h1 class="h3 mb-0 ms-3 text-gray-800">Edit Kategori</h1>
                     </div>
 
                     <!-- Content Row -->
                     <div class="container">
                         <form action="" method="post">
                             <div class="form-group">
-                                <label for="kode">Kode Voucher<span class="text-danger">* (TULIS DALAM HURUF KAPITAL)</span></label>
-                                <input type="text" class="form-control" id="kode" name="kode" required>
+                                <input type="text" class="form-control" id="id" name="id" hidden="true" placeholder>
                             </div>
                             <div class="form-group">
-                                <label for="diskon">Diskon<span class="text-danger">* (Gunakan Format: 25.00%)</span></label>
-                                <input type="text" class="form-control" id="diskon" name="diskon" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="date">Tanggal Kadaluarsa<span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="date" name="date" required>
+                                <label for="kategori">Nama Kategori<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="kategori" name="kategori" placeholder="<?= htmlspecialchars($kategori['nama_kategori']) ?>" required>
                             </div>
                             <div>
                                 <div class="text-danger">

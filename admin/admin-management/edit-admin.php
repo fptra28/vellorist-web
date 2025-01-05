@@ -138,7 +138,7 @@ $conn->close();
         <!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-dark sidebar sidebar-dark accordion" id="accordionSidebar">
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="<?= $base_url ?>">
                 <img src="../assets-admin/logo-obly.png" alt="logo-vellorist" height="35">
                 <div class="sidebar-brand-text mx-3">Vellorist</div>
             </a>
@@ -176,7 +176,7 @@ $conn->close();
             <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 'Superadmin'): ?>
                 <li class="nav-item active">
                     <a class="nav-link" href="<?= $base_url ?>/admin-management">
-                        <i class="fas fa-comments"></i>
+                        <i class="fa-solid fa-user-tie"></i>
                         <span class="text-s">Manajemen Admin</span></a>
                 </li>
             <?php endif; ?>
@@ -223,8 +223,11 @@ $conn->close();
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
                     <!-- Page Heading -->
-                    <div class="d-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Edit Admin</h1>
+                    <div class="d-flex align-items-center mb-4">
+                        <a href="<?= $base_url ?>/admin-management">
+                            <button type="button" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                        </a>
+                        <h1 class="h3 mb-0 ms-3 text-gray-800">Edit Admin</h1>
                     </div>
 
                     <!-- Content Row -->

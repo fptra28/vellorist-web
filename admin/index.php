@@ -85,7 +85,7 @@ $conn->close();
         <!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-dark sidebar sidebar-dark accordion" id="accordionSidebar">
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="<?= $base_url ?>">
                 <img src="<?= $base_url ?>/assets-admin/logo-obly.png" alt="logo-vellorist" height="35">
                 <div class="sidebar-brand-text mx-3">Vellorist</div>
             </a>
@@ -184,7 +184,7 @@ $conn->close();
                                         <div class="col mr-2">
                                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
                                                 Pendapatan</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">IDR. <?= number_format($totalPendapatan) ?></div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">Rp <?= number_format($totalPendapatan, 0, ',', '.') ?></div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fa-solid fa-rupiah-sign fa-2x text-gray-300"></i>

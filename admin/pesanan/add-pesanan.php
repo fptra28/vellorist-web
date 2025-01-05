@@ -1,10 +1,18 @@
 <?php
-require 'config_query.php';
+session_start();
 
-$db = new database();
-$products = $db->getProduct();
+// Memeriksa apakah admin sudah login
+if (!isset($_SESSION['username'])) {
+    header("Location: ./login.php");
+    exit();
+}
 
+// Menyertakan file konfigurasi database
+include '../app/config_query.php';
 ?>
+
+<!DOCTYPE html>
+<html lang="en">
 
 <!DOCTYPE html>
 <html lang="en">
@@ -19,17 +27,17 @@ $products = $db->getProduct();
     <title>Vellorist - Dashboard</title>
 
     <!-- Custom fonts for this template-->
-    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css" />
+    <link href="<?= $base_url ?>/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.css">
     <link
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet" />
 
     <!-- Custom styles for this template-->
-    <link href="css/sb-admin-2.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="./css/bootstrap.css" />
-    <script src="./js/jquery-3.6.0.js"></script>
-    <script src="./js/bootstrap.js"></script>
+    <link href="<?= $base_url ?>/css/sb-admin-2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="<?= $base_url ?>/css/bootstrap.css" />
+    <script src="<?= $base_url ?>/js/jquery-3.6.0.js"></script>
+    <script src="<?= $base_url ?>/js/bootstrap.js"></script>
 </head>
 
 <body id="page-top">
@@ -38,8 +46,8 @@ $products = $db->getProduct();
         <!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-dark sidebar sidebar-dark accordion" id="accordionSidebar">
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
-                <img src="../assets/logo-obly.png" alt="logo-vellorist" height="35">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="<?= $base_url ?>">
+                <img src="../assets-admin/logo-obly.png" alt="logo-vellorist" height="35">
                 <div class="sidebar-brand-text mx-3">Vellorist</div>
             </a>
 
@@ -48,36 +56,46 @@ $products = $db->getProduct();
 
             <!-- Nav Item - Dashboard -->
             <li class="nav-item">
-                <a class="nav-link" href="./index.php">
+                <a class="nav-link" href="<?= $base_url ?>">
                     <i class="fa-solid fa-gauge-high"></i>
                     <span class="text-s">Dashboard</span></a>
             </li>
             <li class="nav-item active">
-                <a class="nav-link" href="./pesanan.php">
+                <a class="nav-link" href="<?= $base_url ?>/pesanan">
                     <i class="fas fa-bag-shopping"></i>
                     <span class="text-s">Pesanan</span></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="./produk.php">
+                <a class="nav-link" href="<?= $base_url ?>/kategori">
                     <i class="fa-solid fa-store"></i>
                     <span class="text-s">Produk</span></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="./promo.php">
+                <a class="nav-link" href="<?= $base_url ?>/promo">
                     <i class="fa-solid fa-tag"></i>
                     <span class="text-s">Promo</span></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="./ulasan.php">
+                <a class="nav-link" href="<?= $base_url ?>/ulasan">
                     <i class="fas fa-comments"></i>
                     <span class="text-s">Ulasan</span></a>
             </li>
+            <!-- Tampilkan Manajemen Admin hanya jika role adalah Superadmin -->
+            <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 'Superadmin'): ?>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= $base_url ?>/admin-management">
+                        <i class="fa-solid fa-user-tie"></i>
+                        <span class="text-s">Manajemen Admin</span></a>
+                </li>
+            <?php endif; ?>
 
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block" />
 
-            <button class="btn btn-danger mx-3 mb-4">Logout</button>
+            <a href="<?= $base_url ?>/logout" class="btn btn-danger mx-3 mb-4">
+                Logout
+            </a>
 
             <!-- Sidebar Toggler (Sidebar) -->
             <div class="text-center d-none d-md-inline">
@@ -102,11 +120,9 @@ $products = $db->getProduct();
                     <ul class="navbar-nav ml-auto">
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
-                                <img class="img-profile rounded-circle" src="img/undraw_profile.svg" />
-                            </a>
+                            <div class="nav-link dropdown-toggle">
+                                <span class="mr-2 d-none d-lg-inline text-dark">Hallo, <strong><?= $_SESSION['nama']; ?></strong></span>
+                            </div>
                         </li>
                     </ul>
                 </nav>
@@ -116,7 +132,7 @@ $products = $db->getProduct();
                 <div class="container-fluid">
                     <!-- Page Heading -->
                     <div class="d-sm-flex align-items-center mb-4">
-                        <a href="./pesanan.php">
+                        <a href="<?= $base_url ?>/pesanan">
                             <button type="button" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Back</button>
                         </a>
                         <h1 class="h3 mb-0 ml-3 text-gray-800">Pesanan</h1>

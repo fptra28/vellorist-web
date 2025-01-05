@@ -60,7 +60,7 @@ $promoList = getPromo($conn);
         <!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-dark sidebar sidebar-dark accordion" id="accordionSidebar">
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="<?= $base_url ?>">
                 <img src="../assets-admin/logo-obly.png" alt="logo-vellorist" height="35">
                 <div class="sidebar-brand-text mx-3">Vellorist</div>
             </a>
@@ -167,20 +167,22 @@ $promoList = getPromo($conn);
                                                     <strong>Kode Voucher:</strong> <?= htmlspecialchars($promo['kode_voucher']) ?>
                                                 </h5>
                                                 <!-- Diskon -->
-                                                <p class="card-text text-dark">
+                                                <p class="card-text text-dark mb-1">
                                                     <strong>Diskon:</strong> <?= number_format($promo['diskon']) ?>%
                                                 </p>
                                                 <!-- Tanggal Kadaluarsa -->
-                                                <p class="card-text text-muted">
+                                                <p class="card-text text-muted mt-0">
                                                     <strong>Kadaluarsa:</strong> <?= date('d F Y', strtotime($promo['tanggal_kadaluarsa'])) ?>
                                                 </p>
-                                                <div class="w-100 d-flex justify-content-between">
+                                                <div class="w-100 d-flex justify-content-between gap-2">
                                                     <!-- Tombol Edit -->
-                                                    <a href="<?= $base_url ?>/promo/edit-promo.php?id=<?= $promo['id_voucher'] ?>" type="button" class="btn btn-primary w-48 py-2">
+                                                    <a href="<?= $base_url ?>/promo/edit-promo.php?id=<?= $promo['id_voucher'] ?>" type="button" class="btn btn-primary flex-grow-1 w-48 py-2">
                                                         Edit
                                                     </a>
                                                     <!-- Tombol Hapus -->
-                                                    <a href="<?= $base_url ?>/promo/delete-promo.php?id=<?= $promo['id_voucher'] ?>" type="button" class="btn btn-danger w-48 py-2">
+                                                    <a href="<?= $base_url ?>/promo/delete-promo.php?id=<?= $promo['id_voucher'] ?>"
+                                                        type="button" class="btn btn-danger flex-grow-1 w-48 py-2"
+                                                        onclick="return confirm('Apakah Anda yakin ingin menghapus promo ini?')">
                                                         Hapus
                                                     </a>
                                                 </div>

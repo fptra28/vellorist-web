@@ -2,56 +2,88 @@
 // Memulai session
 session_start();
 
+// Memastikan pengguna sudah login
 if (!isset($_SESSION['username'])) {
-    header("Location: ./login.php");
+    header("Location: ../../login.php");
     exit();
 }
 
 // Menyertakan file konfigurasi database
-include '../app/config_query.php';
+include "../../app/config_query.php";
+include "../../../app/config.php";
 
-// Memproses form saat tombol submit ditekan
+// Validasi id_kategori dari URL
+$id_kategori = $_GET['id_kategori'] ?? null; // Mengambil id_kategori dari URL
+if (!$id_kategori || !is_numeric($id_kategori)) {
+    echo "<p class='text-danger'>ID Kategori tidak valid atau tidak ditemukan. Pastikan URL sudah benar.</p>";
+    exit();
+}
+
+// Proses form ketika data dikirim melalui POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Mendapatkan data dari form
-    $kode = strtoupper(trim($_POST['kode']));  // Memastikan kode menggunakan huruf kapital
-    $diskon = trim($_POST['diskon']);
-    $tanggal_kadaluarsa = trim($_POST['date']);
+    // Validasi data input
+    $nama_produk = htmlspecialchars(trim($_POST['nama_produk']));
+    $id_kategori = intval($_POST['id_kategori']);
+    $harga = floatval($_POST['harga']);
+    $stok = intval($_POST['stok']);
+    $deskripsi = htmlspecialchars(trim($_POST['deskripsi']));
 
-    // Validasi sederhana
-    if (empty($kode) || empty($diskon) || empty($tanggal_kadaluarsa)) {
-        $error = "Semua field wajib diisi.";
-    } else {
-        // Memastikan format diskon valid (misal: 25.00%)
-        if (!is_numeric($diskon) || $diskon <= 0 || $diskon > 100) {
-            $error = "Diskon harus dalam format yang valid (misalnya 25.00).";
-        } else {
-            // Menyimpan data ke dalam database
-            $query = "INSERT INTO voucher (kode_voucher, diskon, tanggal_kadaluarsa) VALUES (?, ?, ?)";
-            $stmt = $conn->prepare($query);
+    // Validasi file gambar
+    if (isset($_FILES['gambar']) && $_FILES['gambar']['error'] === UPLOAD_ERR_OK) {
+        $gambar = $_FILES['gambar'];
+        $ext = strtolower(pathinfo($gambar['name'], PATHINFO_EXTENSION));
+        $allowed_ext = ['jpg', 'jpeg', 'png', 'gif'];
 
-            if ($stmt) {
-                // Menyiapkan data yang akan dimasukkan
-                $stmt->bind_param("sds", $kode, $diskon, $tanggal_kadaluarsa);
-
-                // Menjalankan query dan mengecek apakah berhasil
-                if ($stmt->execute()) {
-                    // Berhasil menyimpan
-                    header("Location: $base_url/promo");
-                    exit();
-                } else {
-                    // Jika terjadi kesalahan saat eksekusi query
-                    $error = "Terjadi kesalahan saat menyimpan data: " . $conn->error;
-                }
-
-                $stmt->close();
-            } else {
-                // Jika gagal mempersiapkan query
-                $error = "Gagal menyiapkan query.";
-            }
+        // Periksa ekstensi file
+        if (!in_array($ext, $allowed_ext)) {
+            echo "<p class='text-danger'>Ekstensi file tidak diperbolehkan. Hanya JPG, JPEG, PNG, dan GIF yang diterima.</p>";
+            exit();
         }
+
+        // Tentukan path untuk menyimpan file
+        $upload_dir = "../../../assets/uploads/";
+        $new_file_name = uniqid() . '.' . $ext;
+
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0755, true); // Membuat folder jika belum ada
+        }
+
+        // Pindahkan file ke folder tujuan
+        if (!move_uploaded_file($gambar['tmp_name'], $upload_dir . $new_file_name)) {
+            echo "<p class='text-danger'>Gagal mengunggah gambar.</p>";
+            exit();
+        }
+    } else {
+        echo "<p class='text-danger'>File gambar wajib diunggah.</p>";
+        exit();
     }
+
+    // Query untuk menyimpan data ke dalam database
+    $query = "INSERT INTO produk (nama_produk, harga_produk, stock_produk, deskripsi_produk, foto_produk, id_kategori) VALUES (?, ?, ?, ?, ?, ?)";
+    $stmt = $conn->prepare($query);
+
+    if ($stmt === false) {
+        die("Error preparing statement: " . $conn->error);
+    }
+
+    // Bind parameter ke query
+    $stmt->bind_param("siisss", $nama_produk, $harga, $stok, $deskripsi, $new_file_name, $id_kategori);
+
+    // Eksekusi query
+    if ($stmt->execute()) {
+        // Jika berhasil, redirect ke halaman produk
+        header("Location: $base_url/kategori/produk/index.php?id=" . $id_kategori);
+        exit();
+    } else {
+        echo "<p class='text-danger'>Terjadi kesalahan saat menyimpan data produk: " . $conn->error . "</p>";
+    }
+
+    // Tutup prepared statement dan koneksi database
+    $stmt->close();
+    $conn->close();
 }
 ?>
+
 
 
 <!DOCTYPE html>
@@ -64,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="description" content="" />
     <meta name="author" content="" />
 
-    <title>Vellorist - Tambah Promo</title>
+    <title>Vellorist - Kategori</title>
 
     <!-- Custom fonts for this template-->
     <link href="<?= $base_url ?>/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css" />
@@ -87,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <ul class="navbar-nav bg-gradient-dark sidebar sidebar-dark accordion" id="accordionSidebar">
             <!-- Sidebar - Brand -->
             <a class="sidebar-brand d-flex align-items-center justify-content-center" href="<?= $base_url ?>">
-                <img src="../assets-admin/logo-obly.png" alt="logo-vellorist" height="35">
+                <img src="<?= $base_url ?>/assets-admin/logo-obly.png" alt="logo-vellorist" height="35">
                 <div class="sidebar-brand-text mx-3">Vellorist</div>
             </a>
 
@@ -105,12 +137,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <i class="fas fa-bag-shopping"></i>
                     <span class="text-s">Pesanan</span></a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item active">
                 <a class="nav-link" href="<?= $base_url ?>/produk">
                     <i class="fa-solid fa-store"></i>
                     <span class="text-s">Produk</span></a>
             </li>
-            <li class="nav-item active">
+            <li class="nav-item">
                 <a class="nav-link" href="<?= $base_url ?>/promo">
                     <i class="fa-solid fa-tag"></i>
                     <span class="text-s">Promo</span></a>
@@ -172,33 +204,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="container-fluid">
                     <!-- Page Heading -->
                     <div class="d-flex align-items-center mb-4">
-                        <a href="<?= $base_url ?>/promo">
+                        <a href="<?= $base_url ?>/kategori/produk/index.php?id=<?= $id_kategori ?>">
                             <button type="button" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Back</button>
                         </a>
-                        <h1 class="h3 mb-0 ms-3 text-gray-800">Tambah Promo</h1>
+                        <h1 class="h3 mb-0 ms-3 text-gray-800">Tambah Produk</h1>
                     </div>
 
                     <!-- Content Row -->
                     <div class="container">
-                        <form action="" method="post">
-                            <div class="form-group">
-                                <label for="kode">Kode Voucher<span class="text-danger">* (TULIS DALAM HURUF KAPITAL)</span></label>
-                                <input type="text" class="form-control" id="kode" name="kode" required>
+                        <form action="" method="POST" enctype="multipart/form-data">
+                            <div class="form-group mb-3">
+                                <label for="nama_produk">Nama Produk<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="nama_produk" name="nama_produk" required>
                             </div>
-                            <div class="form-group">
-                                <label for="diskon">Diskon<span class="text-danger">* (Gunakan Format: 25.00%)</span></label>
-                                <input type="text" class="form-control" id="diskon" name="diskon" required>
+
+                            <!-- Input hidden untuk id_kategori -->
+                            <input type="hidden" name="id_kategori" value="<?= htmlspecialchars($id_kategori) ?>">
+
+                            <div class="form-group mb-3">
+                                <label for="harga">Harga<span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="harga" name="harga" required>
                             </div>
-                            <div class="form-group">
-                                <label for="date">Tanggal Kadaluarsa<span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="date" name="date" required>
+
+                            <div class="form-group mb-3">
+                                <label for="stok">Stok<span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="stok" name="stok" required>
                             </div>
-                            <div>
-                                <div class="text-danger">
-                                    <?php if (isset($error)) echo $error; ?>
-                                </div>
+
+                            <div class="form-group mb-3">
+                                <label for="deskripsi">Deskripsi<span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="deskripsi" name="deskripsi" rows="4" required></textarea>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100 mt-5">SUBMIT</button>
+
+                            <div class="form-group mb-3">
+                                <label for="gambar">Gambar Produk<span class="text-danger">*</span></label>
+                                <input type="file" class="form-control" id="gambar" name="gambar" accept="image/*" required>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 mt-5" onclick="return confirm('Apakah data-data yang dimasukkan sudah benar?');">SUBMIT</button>
                         </form>
                     </div>
                 </div>
