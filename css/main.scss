@@ -1,0 +1,66 @@
+// Custom.scss
+
+// Option A: Include all of Bootstrap
+
+// Override Bootstrap variables here
+$primary: #026240; // Warna utama
+$secondary: #ffb2c8; // Warna sekunder
+
+// Spacing variables
+$spacer: 1rem; // Ukuran spacer default
+$spacers: (
+  0: 0,
+  1: $spacer * 0.25,
+  2: $spacer * 0.5,
+  3: $spacer,
+  4: $spacer * 1.5,
+  5: $spacer * 3,
+  6: $spacer * 6,
+  7: $spacer * 12,
+  8: $spacer * 18,
+  9: $spacer * 24,
+  10: $spacer * 30,
+  11: $spacer * 36,
+);
+
+// $font-size-root affects the value of `rem`, which is used for as well font sizes, paddings, and margins
+// $font-size-base affects the font size of the body text
+$font-size-root: null;
+$font-size-base: 1rem; // Assumes the browser default, typically `16px`
+$font-size-sm: $font-size-base * 0.875;
+$font-size-lg: $font-size-base * 1.25;
+
+$font-weight-lighter: lighter;
+$font-weight-light: 300;
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+$font-weight-bolder: bolder;
+
+$font-weight-base: $font-weight-normal;
+
+$line-height-base: 1.5;
+$line-height-sm: 1.25;
+$line-height-lg: 2;
+
+$font-sizes: (
+  1: $font-size-base * 4,
+  2: $font-size-base * 3.75,
+  3: $font-size-base * 3.5,
+  4: $font-size-base * 3.25,
+  5: $font-size-base * 2,
+  6: $font-size-base * 2.75,
+  7: $font-size-base * 2.5,
+  8: $font-size-base * 2.25,
+  9: $font-size-base * 2,
+  10: $font-size-base * 1.75,
+  11: $font-size-base * 1.5,
+  12: $font-size-base * 1.25,
+  13: $font-size-base,
+);
+
+// Import Bootstrap SCSS
+@import "../node_modules/bootstrap/scss/bootstrap";
+
+// Additional custom styles can be added here

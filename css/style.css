@@ -1,0 +1,52 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+
+body {
+  background-image: url(../assets/bg-Body.png);
+  background-color: #fff;
+  background-size: cover;
+  background-position: center;
+}
+
+* {
+  font-family: "Inter", serif;
+}
+
+/* Menambahkan shadow pada navbar saat di-scroll */
+.navbar-scrolled {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.452); /* Menambahkan shadow */
+  transition: box-shadow 0.3s ease; /* Efek transisi saat scroll */
+}
+
+/* Mengubah warna tombol navbar-toggler menjadi putih dan menghapus outline */
+#navbar-toggler {
+  background-color: transparent; /* Menghapus latar belakang default */
+  border: none; /* Menghapus border */
+}
+
+#navbar-toggler:focus {
+  outline: none; /* Menghapus outline saat tombol di-click */
+}
+
+#navbar-toggler .navbar-toggler-icon {
+  color: #fff; /* Mengubah warna icon toggle menjadi putih */
+}
+
+/* Custom hover effect */
+.nav-link:hover {
+  color: #ffb2c8 !important; /* Warna teks saat hover */
+  transition: all 0.3s ease-in-out; /* Transisi efek */
+}
+/* Active state */
+.nav-link.active {
+  color: #ffb2c8 !important; /* Warna teks untuk menu aktif */
+}
+
+#hero {
+  background-image: url(../assets/bg-banner.png);
+  background-size: cover;
+}
+
+.pemisah {
+  height: 10px;
+  width: 200px;
+}
