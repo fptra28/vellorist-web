@@ -162,10 +162,14 @@ $promoList = getPromo($conn);
                                     <div class="card border-left-success shadow-sm">
                                         <div class="card-body">
                                             <div class="d-flex flex-column align-items-start">
-                                                <!-- Kode Voucher -->
+                                                <!-- Nama Voucher -->
                                                 <h5 class="card-title text-success">
-                                                    <strong>Kode Voucher:</strong> <?= htmlspecialchars($promo['kode_voucher']) ?>
+                                                    <strong><?= htmlspecialchars($promo['nama_promo']) ?></strong>
                                                 </h5>
+                                                <!-- Kode Voucher -->
+                                                <h6 class="card-text">
+                                                    <strong>Kode Voucher:</strong> <?= htmlspecialchars($promo['kode_voucher']) ?>
+                                                </h6>
                                                 <!-- Diskon -->
                                                 <p class="card-text text-dark mb-1">
                                                     <strong>Diskon:</strong> <?= number_format($promo['diskon']) ?>%

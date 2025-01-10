@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nama_produk = htmlspecialchars(trim($_POST['nama_produk']));
     $id_kategori = intval($_POST['id_kategori']);
     $harga = floatval($_POST['harga']);
-    $deskripsi = htmlspecialchars(trim($_POST['deskripsi']));
+    $deskripsi = trim($_POST['deskripsi']);
 
     // Validasi file gambar
     if (isset($_FILES['gambar']) && $_FILES['gambar']['error'] === UPLOAD_ERR_OK) {
@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Bind parameter ke query
-    $stmt->bind_param("siiss", $nama_produk, $harga, $deskripsi, $new_file_name, $id_kategori);
+    $stmt->bind_param("sisss", $nama_produk, $harga, $deskripsi, $new_file_name, $id_kategori);
 
     // Eksekusi query
     if ($stmt->execute()) {

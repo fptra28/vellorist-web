@@ -47,6 +47,11 @@ body {
   background-size: cover;
 }
 
+#hero-produk {
+  background-image: url(../assets/bg-produk.png);
+  background-size: cover;
+}
+
 .pemisah {
   height: 10px;
   width: 200px;
@@ -62,4 +67,8 @@ body {
 
 #banner .pemisah {
   background-color: #ff3a72;
+}
+
+.card-promo {
+  background: linear-gradient(135deg, #ffffff, #fa87a8);
 }

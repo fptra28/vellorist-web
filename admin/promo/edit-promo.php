@@ -40,12 +40,13 @@ if (!$promo) {
 // Memproses form saat tombol submit ditekan
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Mendapatkan data dari form
+    $nama_promo = trim($_POST['nama_promo']);
     $kode = strtoupper(trim($_POST['kode']));  // Memastikan kode menggunakan huruf kapital
     $diskon = trim($_POST['diskon']);
     $tanggal_kadaluarsa = trim($_POST['date']);
 
     // Validasi sederhana
-    if (empty($kode) || empty($diskon) || empty($tanggal_kadaluarsa)) {
+    if (empty($nama_promo) || empty($kode) || empty($diskon) || empty($tanggal_kadaluarsa)) {
         $error = "Semua field wajib diisi.";
     } else {
         // Memastikan format diskon valid (misal: 25.00%)
@@ -53,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = "Diskon harus dalam format yang valid (misalnya 25.00).";
         } else {
             // Update data promo di dalam database
-            $query = "UPDATE voucher SET kode_voucher = ?, diskon = ?, tanggal_kadaluarsa = ? WHERE id_voucher = ?";
+            $query = "UPDATE voucher SET nama_promo = ?, kode_voucher = ?, diskon = ?, tanggal_kadaluarsa = ? WHERE id_voucher = ?";
             $stmt = $conn->prepare($query);
 
             // Mengecek apakah query update berhasil disiapkan
@@ -62,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             // Menyiapkan data yang akan dimasukkan
-            $stmt->bind_param("sdsi", $kode, $diskon, $tanggal_kadaluarsa, $promo_id);
+            $stmt->bind_param("ssdsi", $nama_promo, $kode, $diskon, $tanggal_kadaluarsa, $promo_id);
 
             // Menjalankan query dan mengecek apakah berhasil
             if ($stmt->execute()) {
@@ -206,6 +207,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <!-- Content Row -->
                     <div class="container">
                         <form action="" method="post">
+                            <div class="form-group">
+                                <label for="nama_promo">Nama Promo<span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="nama_promo" name="nama_promo" value="<?= htmlspecialchars($promo['nama_promo']) ?>" required>
+                            </div>
                             <div class="form-group">
                                 <label for="kode">Kode Voucher<span class="text-danger">* (TULIS DALAM HURUF KAPITAL)</span></label>
                                 <input type="text" class="form-control" id="kode" name="kode" value="<?= htmlspecialchars($promo['kode_voucher']) ?>" required>
