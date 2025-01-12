@@ -47,46 +47,44 @@ function getProducts($conn)
     return [];
 }
 
-function getUlasanByRating($conn, $id, $rating)
+function getUlasanByIdProduk($conn, $id)
 {
+    // Query untuk mengambil ulasan berdasarkan id_produk
     $query = "
         SELECT 
             ulasan.id_ulasan, 
             produk.nama_produk, 
             pelanggan.nama_pelanggan, 
             ulasan.rating, 
-            ulasan.komentar, 
-            ulasan.created_at 
+            ulasan.komentar 
         FROM ulasan_produk ulasan
         JOIN produk ON ulasan.id_produk = produk.id_produk
         JOIN pelanggan ON ulasan.id_pelanggan = pelanggan.id_pelanggan
-        WHERE ulasan.id_produk = ?";
+        WHERE ulasan.id_produk = ?"; // Menyaring berdasarkan id_produk
 
-    // Menambahkan filter rating jika rating ada
-    if ($rating && $rating !== 'all') {
-        $query .= " AND ulasan.rating = ?";
-    }
-
+    // Menyiapkan query
     $stmt = $conn->prepare($query);
 
-    // Binding parameter berdasarkan rating
-    if ($rating && $rating !== 'all') {
-        $stmt->bind_param("ii", $id, $rating);
-    } else {
-        $stmt->bind_param("i", $id);
+    // Cek apakah prepare berhasil
+    if ($stmt === false) {
+        die('Query prepare failed: ' . $conn->error); // Menampilkan error jika prepare gagal
     }
 
+    // Bind parameter untuk id_produk
+    $stmt->bind_param("i", $id);
+
+    // Eksekusi query
     $stmt->execute();
     $result = $stmt->get_result();
 
+    // Mengembalikan data jika ada ulasan
     return $result->num_rows > 0 ? $result->fetch_all(MYSQLI_ASSOC) : [];
 }
-
 
 // Ambil data
 $produk = getDetail($conn, $id);
 $produkList = getProducts($conn);
-$ulasan = getUlasanByRating($conn, $id, $rating);
+$ulasan = getUlasanByIdProduk($conn, $id);
 ?>
 
 <!DOCTYPE html>

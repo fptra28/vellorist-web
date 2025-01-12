@@ -21,7 +21,7 @@ $produk = [
 ];
 $biaya_pengiriman = $_POST['shippingPrice'] ?? 0;
 $total_harga = $produk['harga_produk'] + $biaya_pengiriman;
-$order_id = 'V-' . uniqid(); // ID unik untuk pesanan
+$order_id = 'V-' . rand(); // ID unik untuk pesanan
 
 // Data transaksi untuk Midtrans
 $transaction_details = [
@@ -57,12 +57,17 @@ $customer_details = [
     ],
 ];
 
-// Data lengkap untuk Snap API
+// URL untuk pengalihan setelah pembayaran selesai
+$finish_redirect_url = $url; // Ganti dengan URL yang sesuai
+
+// Data lengkap untuk Snap API, termasuk finish_redirect_url
 $params = [
     'transaction_details' => $transaction_details,
     'item_details' => $item_details,
     'customer_details' => $customer_details,
+    'finish_redirect_url' => $finish_redirect_url, // Tambahkan URL pengalihan
 ];
+
 
 // Mendapatkan Snap Token dari Midtrans API
 try {
@@ -75,8 +80,8 @@ try {
         $id_pelanggan = $conn->insert_id;  // Ambil ID pelanggan yang baru saja disimpan
 
         // Simpan data pesanan ke tabel pesanan
-        $sql_pesanan = "INSERT INTO pesanan (id_pelanggan, nomor_pesanan, total_harga, status_pemesanan, metode_pembayaran, keterangan, id_produk, nama_kurir) 
-                VALUES ('$id_pelanggan', '$order_id', '$total_harga', 'Belum Dibayar', 'Midtrans', '$keterangan', '{$produk['id_produk']}', '-')";
+        $sql_pesanan = "INSERT INTO pesanan (id_pelanggan, nomor_pesanan, total_harga, status_pemesanan, metode_pembayaran, keterangan, id_produk, kurir) 
+                VALUES ('$id_pelanggan', '$order_id', '$total_harga', 'Diproses', 'Midtrans', '$keterangan', '{$produk['id_produk']}', '-')";
 
         if ($conn->query($sql_pesanan) === TRUE) {
             // Data pesanan berhasil disimpan

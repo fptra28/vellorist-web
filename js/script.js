@@ -101,8 +101,28 @@ document.getElementById("paymentForm").addEventListener("submit", function (e) {
     .then((data) => {
       // Jika berhasil, dapatkan snapToken dan lakukan transaksi
       if (data.snapToken) {
-        // Redirect ke halaman pembayaran Midtrans menggunakan Snap Token
-        window.snap.pay(data.snapToken);
+        // Lakukan transaksi dengan Snap Token
+        window.snap.pay(data.snapToken, {
+          onSuccess: function (result) {
+            /* You may add your own implementation here */
+            alert("payment success!");
+            console.log(result);
+          },
+          onPending: function (result) {
+            /* You may add your own implementation here */
+            alert("wating your payment!");
+            console.log(result);
+          },
+          onError: function (result) {
+            /* You may add your own implementation here */
+            alert("payment failed!");
+            console.log(result);
+          },
+          onClose: function () {
+            /* You may add your own implementation here */
+            alert("you closed the popup without finishing the payment");
+          },
+        });
       } else {
         alert("Terjadi kesalahan saat memproses pembayaran: " + data.error);
       }
