@@ -197,7 +197,7 @@ $couponList = getCoupon($conn);
                                             <strong>Rp. <?= number_format($produk['harga_produk'], 0, '', '.') ?></strong>
                                         </p>
                                         <!-- Button -->
-                                        <a href="<?= $url ?>/produk/<?= $produk['id_produk'] ?>"
+                                        <a href="<?= $url ?>/produk/detail/index.php?id=<?= $produk['id_produk'] ?>"
                                             class="btn btn-secondary fw-bold mt-auto">
                                             Lihat Detail
                                         </a>
@@ -214,8 +214,8 @@ $couponList = getCoupon($conn);
                     <a href="<?= $url ?>/produk" class="btn btn-primary fw-bold fs-13 rounded-pill px-4 py-2 shadow-lg">Lihat Koleksi</a>
                 </div>
             </div>
+        </section>
     </div>
-    </section>
 
     <!-- Footer Section  -->
     <footer class="bg-primary text-white pt-5">

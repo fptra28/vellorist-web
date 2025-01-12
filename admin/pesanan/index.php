@@ -34,7 +34,7 @@ function getPesananList($conn, $search = '')
         LEFT JOIN pelanggan ON pesanan.id_pelanggan = pelanggan.id_pelanggan
         LEFT JOIN produk ON pesanan.id_produk = produk.id_produk
         WHERE 
-            (pesanan.id_pesanan = ? OR ? = '')  -- Mencari ID yang sesuai atau menampilkan semua data jika search kosong
+            (pesanan.id_pesanan = ? OR ? = '')
         ORDER BY pesanan.tanggal_pemesanan DESC
     ";
 
@@ -219,14 +219,24 @@ $pesananList = getPesananList($conn, $search);
                                 <?php if (!empty($pesananList)) : ?>
                                     <?php foreach ($pesananList as $pesanan) : ?>
                                         <tr class="text-center">
-                                            <td>V-<?= htmlspecialchars($pesanan['id_pesanan']) ?></td>
-                                            <td><?= htmlspecialchars($pesanan['nama_pelanggan']) ?></td>
-                                            <td><?= htmlspecialchars($pesanan['tanggal_pemesanan']) ?></td>
-                                            <td><?= htmlspecialchars($pesanan['nama_produk']) ?></td>
-                                            <td>Rp <?= number_format($pesanan['total_harga'], 0, ',', '.') ?></td>
-                                            <td><?= htmlspecialchars($pesanan['status_pemesanan']) ?></td>
-                                            <td><?= htmlspecialchars($pesanan['metode_pembayaran']) ?></td>
-                                            <td><?= htmlspecialchars($pesanan['keterangan']) ?></td>
+                                            <td class="align-middle">V-<?= htmlspecialchars($pesanan['id_pesanan']) ?></td>
+                                            <td class="align-middle"><?= htmlspecialchars($pesanan['nama_pelanggan']) ?></td>
+                                            <td class="align-middle"><?= htmlspecialchars($pesanan['tanggal_pemesanan']) ?></td>
+                                            <td class="align-middle"><?= htmlspecialchars($pesanan['nama_produk']) ?></td>
+                                            <td class="align-middle">Rp <?= number_format($pesanan['total_harga'], 0, ',', '.') ?></td>
+                                            <td class="align-middle">
+                                                <?php if ($pesanan['status_pemesanan'] == "Dalam Proses"): ?>
+                                                    <span class="badge badge text-bg-primary text-white"><?= htmlspecialchars($pesanan['status_pemesanan']) ?></span>
+                                                <?php elseif ($pesanan['status_pemesanan'] == "Dalam Pengiriman"): ?>
+                                                    <span class="badge badge text-bg-warning text-dark"><?= htmlspecialchars($pesanan['status_pemesanan']) ?></span>
+                                                <?php elseif ($pesanan['status_pemesanan'] == "Selesai"): ?>
+                                                    <span class="badge badge text-bg-success text-white"><?= htmlspecialchars($pesanan['status_pemesanan']) ?></span>
+                                                <?php elseif ($pesanan['status_pemesanan'] == "Dibatalkan"): ?>
+                                                    <span class="badge badge text-bg-danger text-white"><?= htmlspecialchars($pesanan['status_pemesanan']) ?></span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="align-middle"><?= htmlspecialchars($pesanan['metode_pembayaran']) ?></td>
+                                            <td class="align-middle"><?= htmlspecialchars($pesanan['keterangan']) ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php else : ?>

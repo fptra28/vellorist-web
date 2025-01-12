@@ -62,3 +62,53 @@ function copyResi() {
   // Notifikasi atau alert bahwa kode telah disalin
   alert("Kode kupon telah disalin: " + couponCode);
 }
+
+// Ambil semua opsi filter dropdown
+const filterOptions = document.querySelectorAll(".filter-option");
+
+filterOptions.forEach((option) => {
+  option.addEventListener("click", function (event) {
+    // Ambil rating yang dipilih
+    const rating = event.target.dataset.rating;
+
+    // Dapatkan ID produk dari URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get("id");
+
+    // Bangun URL baru dengan parameter rating
+    let newUrl = window.location.pathname + "?id=" + productId;
+    if (rating && rating !== "all") {
+      newUrl += "&rating=" + rating;
+    }
+
+    // Redirect ke URL yang baru untuk memuat ulang dengan filter rating
+    window.location.href = newUrl;
+  });
+});
+
+document.getElementById("paymentForm").addEventListener("submit", function (e) {
+  e.preventDefault(); // Mencegah pengiriman form secara default
+
+  // Ambil data dari form
+  var formData = new FormData(this);
+
+  // Kirim data ke backend PHP menggunakan Fetch API
+  fetch("../checkout/placeOrder.php", {
+    method: "POST",
+    body: formData,
+  })
+    .then((response) => response.json()) // Server mengembalikan JSON
+    .then((data) => {
+      // Jika berhasil, dapatkan snapToken dan lakukan transaksi
+      if (data.snapToken) {
+        // Redirect ke halaman pembayaran Midtrans menggunakan Snap Token
+        window.snap.pay(data.snapToken);
+      } else {
+        alert("Terjadi kesalahan saat memproses pembayaran: " + data.error);
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      alert("Terjadi kesalahan jaringan");
+    });
+});

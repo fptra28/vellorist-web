@@ -246,16 +246,16 @@ $conn->close();
                                                 <i class="fa-solid fa-copy"></i>
                                             </button>
                                         </div>
-                                        <p class="m-0">
+                                        <p class="m-0 align-items-center">
                                             <strong>Status:</strong>
                                             <?php if ($row['status_pemesanan'] == "Dalam Proses"): ?>
-                                                <span class="text-primary"><?= htmlspecialchars($row['status_pemesanan']) ?></span>
+                                                <span class="badge badge text-bg-primary text-white"><?= htmlspecialchars($row['status_pemesanan']) ?></span>
                                             <?php elseif ($row['status_pemesanan'] == "Dalam Pengiriman"): ?>
-                                                <span class="text-warning"><?= htmlspecialchars($row['status_pemesanan']) ?></span>
+                                                <span class="badge badge text-bg-warning text-dark"><?= htmlspecialchars($row['status_pemesanan']) ?></span>
                                             <?php elseif ($row['status_pemesanan'] == "Selesai"): ?>
-                                                <span class="text-success"><?= htmlspecialchars($row['status_pemesanan']) ?></span>
+                                                <span class="badge badge text-bg-success text-white"><?= htmlspecialchars($row['status_pemesanan']) ?></span>
                                             <?php elseif ($row['status_pemesanan'] == "Dibatalkan"): ?>
-                                                <span class="text-danger"><?= htmlspecialchars($row['status_pemesanan']) ?></span>
+                                                <span class="badge badge text-bg-danger text-white"><?= htmlspecialchars($row['status_pemesanan']) ?></span>
                                             <?php endif; ?>
                                         </p>
                                     </div>
@@ -333,9 +333,8 @@ $conn->close();
             <section class="invoice-section p-5">
                 <div class="row justify-content-center my-7">
                     <div class="col-12 text-center">
-                        <img src="<?= $url ?>/assets/no-found-2.png" alt="Data tidak ditemukan" class="img-fluid" style="widht: 200px;">
-                        <p class="mt-5 text-muted">Maaf, pesanan tidak ditemukan. Silakan coba lagi atau hubungi kami.</p>
-                        <a href="<?= $url ?>" class="btn btn-primary mt-3">Kembali ke Beranda</a>
+                        <img src="<?= $url ?>/assets/no-found-2.png" alt="Data tidak ditemukan" class="img-fluid" style="height: 300px;">
+                        <p class="mt-5 text-muted">Masukkan nomor pesanan untuk mendapatkan informasi pesanan.</p>
                     </div>
                 </div>
             </section>
@@ -378,7 +377,7 @@ $conn->close();
                                             <strong>Rp. <?= number_format($produk['harga_produk'], 0, '', '.') ?></strong>
                                         </p>
                                         <!-- Button -->
-                                        <a href="<?= $url ?>/produk/<?= $produk['id_produk'] ?>"
+                                        <a href="<?= $url ?>/produk/detail/index.php?id=<?= $produk['id_produk'] ?>"
                                             class="btn btn-secondary fw-bold mt-auto">
                                             Lihat Detail
                                         </a>
