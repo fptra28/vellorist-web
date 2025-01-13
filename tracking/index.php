@@ -19,8 +19,8 @@ function getPesananByNomor($conn, $nomor_pesanan)
             pelanggan.alamat_pengiriman, 
             pelanggan.nomor_telepon, 
             pelanggan.email_pelanggan, 
-            pengiriman.nama_kurir, 
-            pengiriman.nomor_resi, 
+            pesanan.kurir,
+            pesanan.nomor_resi,
             produk.nama_produk, 
             produk.harga_produk, 
             produk.foto_produk, 
@@ -31,7 +31,6 @@ function getPesananByNomor($conn, $nomor_pesanan)
             pesanan.tanggal_pemesanan
         FROM pesanan
         LEFT JOIN pelanggan ON pesanan.id_pelanggan = pelanggan.id_pelanggan
-        LEFT JOIN pengiriman ON pesanan.id_pengiriman = pengiriman.id_pengiriman
         LEFT JOIN produk ON pesanan.id_produk = produk.id_produk
         WHERE pesanan.nomor_pesanan = ?
     ";
@@ -208,7 +207,7 @@ $conn->close();
                         <!-- Header Invoice -->
                         <div class="card-header bg-primary text-white text-center">
                             <h3 class="mb-0">Pesanan Anda</h3>
-                            <small>No. Pesanan: #<?= htmlspecialchars($nomor_pesanan) ?></small>
+                            <small>No. Pesanan: <?= htmlspecialchars($nomor_pesanan) ?></small>
                         </div>
 
                         <!-- Body Invoice -->
@@ -237,7 +236,7 @@ $conn->close();
                                     <div class="card flex-shrink-1 rounded-2 border-0">
                                         <h5 class="text-primary fw-bold">Detail Pengiriman</h5>
                                         <p class="m-0 mb-2">
-                                            <strong>Kurir:</strong> <?= htmlspecialchars($row['nama_kurir']) ?>
+                                            <strong>Kurir:</strong> <?= htmlspecialchars($row['kurir']) ?>
                                         </p>
                                         <div class="d-flex align-items-center mb-2">
                                             <strong class="me-2">Nomor Resi:</strong>
@@ -248,10 +247,10 @@ $conn->close();
                                         </div>
                                         <p class="m-0 align-items-center">
                                             <strong>Status:</strong>
-                                            <?php if ($row['status_pemesanan'] == "Dalam Proses"): ?>
-                                                <span class="badge badge text-bg-primary text-white"><?= htmlspecialchars($row['status_pemesanan']) ?></span>
-                                            <?php elseif ($row['status_pemesanan'] == "Dalam Pengiriman"): ?>
+                                            <?php if ($row['status_pemesanan'] == "Diproses"): ?>
                                                 <span class="badge badge text-bg-warning text-dark"><?= htmlspecialchars($row['status_pemesanan']) ?></span>
+                                            <?php elseif ($row['status_pemesanan'] == "Dikirim"): ?>
+                                                <span class="badge badge text-bg-primary text-dark"><?= htmlspecialchars($row['status_pemesanan']) ?></span>
                                             <?php elseif ($row['status_pemesanan'] == "Selesai"): ?>
                                                 <span class="badge badge text-bg-success text-white"><?= htmlspecialchars($row['status_pemesanan']) ?></span>
                                             <?php elseif ($row['status_pemesanan'] == "Dibatalkan"): ?>
@@ -290,12 +289,7 @@ $conn->close();
                                                 </p>
 
                                                 <p class="mt-auto h-100">
-                                                    <?php
-                                                    // Menghitung total harga dengan menambahkan biaya pengiriman
-                                                    $biaya_pengiriman = 15000;
-                                                    $total_harga = $row['total_harga'] + $biaya_pengiriman;
-                                                    ?>
-                                                    <strong>Total:</strong> Rp <?= number_format($total_harga, 0, ',', '.') ?>
+                                                    <strong>Total:</strong> Rp <?= number_format($row['total_harga'], 0, ',', '.') ?>
                                                 </p>
                                             </div>
                                         </div>
@@ -306,9 +300,9 @@ $conn->close();
                                 <div class="row">
                                     <div class="col-md-12">
                                         <h5 class="text-primary">Catatan</h5>
-                                        <?php if ($row['status_pemesanan'] == "Dalam Proses"): ?>
+                                        <?php if ($row['status_pemesanan'] == "Diproses"): ?>
                                             <p class="text-primary">Pesanan Anda sedang dalam proses pengerjaan. Terima kasih telah berbelanja di Vellorist.</p>
-                                        <?php elseif ($row['status_pemesanan'] == "Dalam Pengiriman"): ?>
+                                        <?php elseif ($row['status_pemesanan'] == "Dikirim"): ?>
                                             <p class="text-warning">Pesanan Anda sedang dalam proses pengiriman. Terima kasih telah berbelanja di Vellorist.</p>
                                         <?php elseif ($row['status_pemesanan'] == "Selesai"): ?>
                                             <p class="text-success">Pesanan Anda sudah sampai tujuan. Terima kasih telah berbelanja di Vellorist.</p>

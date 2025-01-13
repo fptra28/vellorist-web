@@ -23,6 +23,7 @@ function getPesananList($conn, $search = '')
     $query = "
         SELECT 
             pesanan.id_pesanan,
+            pesanan.nomor_pesanan,
             pelanggan.nama_pelanggan,
             pesanan.tanggal_pemesanan,
             produk.nama_produk,
@@ -34,7 +35,7 @@ function getPesananList($conn, $search = '')
         LEFT JOIN pelanggan ON pesanan.id_pelanggan = pelanggan.id_pelanggan
         LEFT JOIN produk ON pesanan.id_produk = produk.id_produk
         WHERE 
-            (pesanan.id_pesanan = ? OR ? = '')
+            (pesanan.nomor_pesanan = ? OR ? = '')
         ORDER BY pesanan.tanggal_pemesanan DESC
     ";
 
@@ -189,7 +190,6 @@ $pesananList = getPesananList($conn, $search);
                             <form method="get" action="index.php" class="d-flex">
                                 <div class="input-group w-50 mr-3">
                                     <!-- Kotak yang menyatu dengan input search -->
-                                    <span class="input-group-text">V-</span>
                                     <input type="text" name="search" class="form-control" placeholder="Search pesanan" value="<?= htmlspecialchars($search) ?>" aria-label="Search Admin">
                                 </div>
                                 <button type="submit" class="btn btn-primary">Search</button>
@@ -211,7 +211,6 @@ $pesananList = getPesananList($conn, $search);
                                     <th>Produk</th>
                                     <th>Total Harga</th>
                                     <th>Status Pemesanan</th>
-                                    <th>Metode Pembayaran</th>
                                     <th>Keterangan</th>
                                 </tr>
                             </thead>
@@ -219,15 +218,15 @@ $pesananList = getPesananList($conn, $search);
                                 <?php if (!empty($pesananList)) : ?>
                                     <?php foreach ($pesananList as $pesanan) : ?>
                                         <tr class="text-center">
-                                            <td class="align-middle">V-<?= htmlspecialchars($pesanan['id_pesanan']) ?></td>
+                                            <td class="align-middle"><?= htmlspecialchars($pesanan['nomor_pesanan']) ?></td>
                                             <td class="align-middle"><?= htmlspecialchars($pesanan['nama_pelanggan']) ?></td>
                                             <td class="align-middle"><?= htmlspecialchars($pesanan['tanggal_pemesanan']) ?></td>
                                             <td class="align-middle"><?= htmlspecialchars($pesanan['nama_produk']) ?></td>
                                             <td class="align-middle">Rp <?= number_format($pesanan['total_harga'], 0, ',', '.') ?></td>
                                             <td class="align-middle">
-                                                <?php if ($pesanan['status_pemesanan'] == "Dalam Proses"): ?>
+                                                <?php if ($pesanan['status_pemesanan'] == "Diproses"): ?>
                                                     <span class="badge badge text-bg-primary text-white"><?= htmlspecialchars($pesanan['status_pemesanan']) ?></span>
-                                                <?php elseif ($pesanan['status_pemesanan'] == "Dalam Pengiriman"): ?>
+                                                <?php elseif ($pesanan['status_pemesanan'] == "Dikirim"): ?>
                                                     <span class="badge badge text-bg-warning text-dark"><?= htmlspecialchars($pesanan['status_pemesanan']) ?></span>
                                                 <?php elseif ($pesanan['status_pemesanan'] == "Selesai"): ?>
                                                     <span class="badge badge text-bg-success text-white"><?= htmlspecialchars($pesanan['status_pemesanan']) ?></span>
@@ -235,8 +234,15 @@ $pesananList = getPesananList($conn, $search);
                                                     <span class="badge badge text-bg-danger text-white"><?= htmlspecialchars($pesanan['status_pemesanan']) ?></span>
                                                 <?php endif; ?>
                                             </td>
-                                            <td class="align-middle"><?= htmlspecialchars($pesanan['metode_pembayaran']) ?></td>
-                                            <td class="align-middle"><?= htmlspecialchars($pesanan['keterangan']) ?></td>
+                                            <td class="align-middle">
+                                                <?php
+                                                if (!empty($pesanan['keterangan'])) {
+                                                    echo $pesanan['keterangan'];
+                                                } else {
+                                                    echo "-";
+                                                }
+                                                ?>
+                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php else : ?>
